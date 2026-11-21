@@ -4,6 +4,10 @@
   "description": "SeekFix – Broken Link Checker & Fixer",
   "license": "GPL-2.0-or-later",
   "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "lint:js": "wp-scripts lint-js assets/src",
+    "lint:css": "wp-scripts lint-style \"assets/src/**/*.scss\"",
     "env:start": "wp-env start",
     "env:stop": "wp-env stop",
     "env:destroy": "wp-env destroy",
@@ -13,6 +17,15 @@
     "lint:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/seekfix vendor/bin/phpcs"
   },
   "devDependencies": {
-    "@wordpress/env": "^12.2.0"
+    "@wordpress/api-fetch": "8.2.0",
+    "@wordpress/components": "45.0.0",
+    "@wordpress/compose": "9.2.0",
+    "@wordpress/dataviews": "22.1.0",
+    "@wordpress/element": "10.2.0",
+    "@wordpress/env": "^12.2.0",
+    "@wordpress/i18n": "7.2.0",
+    "@wordpress/icons": "21.0.0",
+    "@wordpress/scripts": "37.2.0",
+    "@wordpress/url": "5.2.0"
   }
 }

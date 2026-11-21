@@ -273,4 +273,37 @@ class PostIndexer {
 
 		return array_map( 'intval', $ids );
 	}
+
+	/**
+	 * Counts scannable posts, optionally only those up to an ID (scan progress).
+	 *
+	 * @param int|null $up_to_id Highest ID to count, or null for all.
+	 * @return int
+	 */
+	public function count_posts( $up_to_id = null ) {
+		global $wpdb;
+
+		$types    = Settings::post_types();
+		$statuses = Settings::post_statuses();
+
+		if ( empty( $types ) ) {
+			return 0;
+		}
+
+		$type_in   = implode( ', ', array_fill( 0, count( $types ), '%s' ) );
+		$status_in = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+		$max_id    = null === $up_to_id ? PHP_INT_MAX : (int) $up_to_id;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- IN() placeholders built above; values passed as one array.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Progress count during a scan; must be fresh.
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->posts} WHERE ID <= %d AND post_type IN ({$type_in}) AND post_status IN ({$status_in})",
+				array_merge( array( $max_id ), $types, $statuses )
+			)
+		);
+		// phpcs:enable
+
+		return (int) $count;
+	}
 }

@@ -127,12 +127,88 @@ class LinkRepository {
 	public function set_ignored( $id, $ignored ) {
 		global $wpdb;
 
+		$row = array( 'ignored' => $ignored ? 1 : 0 );
+
+		if ( ! $ignored ) {
+			// Back in the queue: check it again soon.
+			$row['next_check_at'] = current_time( 'mysql', true );
+		}
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
-		return false !== $wpdb->update( Installer::table( 'links' ), array( 'ignored' => $ignored ? 1 : 0 ), array( 'id' => (int) $id ) );
+		return false !== $wpdb->update( Installer::table( 'links' ), $row, array( 'id' => (int) $id ) );
 	}
 
 	/**
-	 * Counts URLs by status, ignored ones apart.
+	 * Makes every URL due now, for a full scan. Status and counters stay.
+	 *
+	 * @param string $now UTC time, "Y-m-d H:i:s".
+	 * @return int Rows changed.
+	 */
+	public function make_all_due( $now ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		return (int) $wpdb->query( $wpdb->prepare( 'UPDATE %i SET next_check_at = %s WHERE ignored = 0 AND next_check_at > %s', Installer::table( 'links' ), $now, $now ) );
+	}
+
+	/**
+	 * Counts URLs in the queue (not ignored), and how many were checked since a time.
+	 *
+	 * @param string $since UTC time, "Y-m-d H:i:s".
+	 * @return array{total:int,checked:int}
+	 */
+	public function count_checked_since( $since ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Progress count; must be fresh.
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT COUNT(*) AS total, SUM(last_checked_at IS NOT NULL AND last_checked_at >= %s) AS checked FROM %i WHERE ignored = 0',
+				$since,
+				Installer::table( 'links' )
+			)
+		);
+
+		return array(
+			'total'   => $row ? (int) $row->total : 0,
+			'checked' => $row ? (int) $row->checked : 0,
+		);
+	}
+
+	/**
+	 * Counts URLs due before a time, skipping ignored ones.
+	 *
+	 * @param string $before UTC time, "Y-m-d H:i:s".
+	 * @return int
+	 */
+	public function count_due_before( $before ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Work queue; must be fresh.
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE ignored = 0 AND next_check_at <= %s', Installer::table( 'links' ), $before ) );
+	}
+
+	/**
+	 * Counts confirmed broken URLs that still appear in some post.
+	 *
+	 * @return int
+	 */
+	public function count_broken_in_use() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Cached by the caller.
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT COUNT(*) FROM %i l WHERE l.status = %s AND l.ignored = 0 AND EXISTS (SELECT 1 FROM %i i WHERE i.link_id = l.id)',
+				Installer::table( 'links' ),
+				'broken',
+				Installer::table( 'instances' )
+			)
+		);
+	}
+
+	/**
+	 * Counts URLs that appear in some post, by status, ignored ones apart.
 	 *
 	 * @return array<string, int> Counts keyed by status, plus "ignored".
 	 */
@@ -141,7 +217,12 @@ class LinkRepository {
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
 		$rows = $wpdb->get_results(
-			$wpdb->prepare( 'SELECT IF(ignored = 1, %s, status) AS s, COUNT(*) AS n FROM %i GROUP BY s', 'ignored', Installer::table( 'links' ) )
+			$wpdb->prepare(
+				'SELECT IF(l.ignored = 1, %s, l.status) AS s, COUNT(*) AS n FROM %i l WHERE EXISTS (SELECT 1 FROM %i i WHERE i.link_id = l.id) GROUP BY s',
+				'ignored',
+				Installer::table( 'links' ),
+				Installer::table( 'instances' )
+			)
 		);
 
 		$counts = array();

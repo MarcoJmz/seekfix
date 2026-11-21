@@ -1,0 +1,6 @@
+/*
+ * Styles of the bundled packages. Imported from CSS, not JS: @wordpress/dataviews
+ * declares "sideEffects": false, so webpack drops a JS import of its CSS.
+ */
+@import "@wordpress/components/build-style/style.css";
+@import "@wordpress/dataviews/build-style/style.css";

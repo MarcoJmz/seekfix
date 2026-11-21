@@ -10,3 +10,4 @@ vendor/
 *.zip
 .wp-env.override.json
 .phpunit.result.cache
+assets/build/

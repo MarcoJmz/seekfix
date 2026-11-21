@@ -1,0 +1,120 @@
+// Tools → Broken Links. Layout only: colors and type come from WordPress.
+
+.seekfix-wrap {
+	max-width: 1400px;
+
+	.seekfix-tab {
+		padding-top: 16px;
+	}
+}
+
+.seekfix-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	gap: 12px;
+	margin: 16px 0;
+}
+
+.seekfix-stat__value {
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.seekfix-stat.is-broken .seekfix-stat__value {
+	color: #b32d2e;
+}
+
+.seekfix-stat__label,
+.seekfix-muted {
+	color: #646970;
+}
+
+.seekfix-progress {
+	max-width: 480px;
+	margin: 16px 0;
+
+	.components-progress-bar {
+		width: 100%;
+	}
+}
+
+.seekfix-controls {
+	margin: 16px 0;
+}
+
+.seekfix-links {
+	background: #fff;
+	border: 1px solid #dcdcde;
+
+	.dataviews-wrapper {
+		min-height: 400px;
+	}
+}
+
+.seekfix-url,
+.seekfix-break {
+	word-break: break-all;
+}
+
+.seekfix-status.is-broken {
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+.seekfix-badge {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 0 6px;
+	border-radius: 2px;
+	background: #fcf0f1;
+	color: #8a2424;
+	font-size: 12px;
+}
+
+.seekfix-chain {
+	margin: 0 0 16px 20px;
+
+	code {
+		margin-right: 4px;
+	}
+}
+
+.seekfix-dialog {
+	max-width: 560px;
+
+	.seekfix-dialog__buttons {
+		margin-top: 16px;
+	}
+}
+
+.seekfix-settings {
+	display: grid;
+	gap: 16px;
+	max-width: 720px;
+
+	h2 {
+		margin: 0;
+		font-size: 14px;
+	}
+
+	fieldset {
+		margin-bottom: 16px;
+	}
+
+	legend {
+		margin-bottom: 8px;
+		font-weight: 600;
+	}
+
+	.components-textarea-control {
+		margin-bottom: 16px;
+	}
+}
+
+.seekfix-snackbars {
+	position: fixed;
+	bottom: 24px;
+	left: 184px;
+	z-index: 100000;
+}

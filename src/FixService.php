@@ -229,6 +229,106 @@ class FixService {
 	}
 
 	/**
+	 * Fixes a selection of instances, which may hold several URLs.
+	 *
+	 * All instances are read before the first write: saving a post indexes
+	 * it again and replaces its instance IDs. Each post gets one write per URL
+	 * (one revision and one history row each, so they undo in reverse order);
+	 * after the first write, the next URL is found again by raw value and
+	 * occurrence, which editing another URL does not move.
+	 *
+	 * @param int[]                $instance_ids Row IDs in seekfix_instances.
+	 * @param string               $action       Removal or use_final_url; replace_url
+	 *                                           takes one URL at a time.
+	 * @param array<string, mixed> $args         `force` (bool).
+	 * @return array<string, mixed>|WP_Error Summary: `fixed`, `skipped` and `works_again`
+	 *                                       (link IDs left untouched because they work).
+	 */
+	public function fix_instances( array $instance_ids, $action, array $args = array() ) {
+		if ( self::REPLACE_URL === $action ) {
+			return new WP_Error( 'seekfix_invalid_action', __( 'Replace one URL at a time.', 'seekfix' ), array( 'status' => 400 ) );
+		}
+
+		$summary = array(
+			'fixed'       => array(),
+			'skipped'     => array(),
+			'works_again' => array(),
+		);
+		$groups  = array();
+		$links   = array();
+
+		foreach ( array_unique( array_map( 'intval', $instance_ids ) ) as $id ) {
+			$instance = $this->instances->get( $id );
+
+			if ( ! $instance ) {
+				$summary['skipped'][] = $this->skip_entry( 0, new WP_Error( 'seekfix_instance_not_found', __( 'This link is no longer in the SeekFix list. Scan the post again.', 'seekfix' ) ), $id );
+				continue;
+			}
+
+			if ( ! in_array( $action, self::ELEMENT_ACTIONS[ $this->element( $instance ) ], true ) ) {
+				$summary['skipped'][] = $this->skip_entry( (int) $instance->post_id, $this->not_allowed( $instance ), $id );
+				continue;
+			}
+
+			$link_id = (int) $instance->link_id;
+
+			if ( ! isset( $links[ $link_id ] ) ) {
+				$links[ $link_id ] = $this->links->get( $link_id );
+			}
+
+			$groups[ (int) $instance->post_id ][ $link_id ][] = $instance;
+		}
+
+		$targets = array();
+
+		foreach ( $links as $link_id => $link ) {
+			$new_url = $link ? $this->validate( $action, $link, $args ) : new WP_Error( 'seekfix_link_not_in_list', __( 'This URL is no longer in the SeekFix list.', 'seekfix' ) );
+
+			if ( ! is_wp_error( $new_url ) && empty( $args['force'] ) && $this->works_again( $link, $action ) ) {
+				$summary['works_again'][] = $link_id;
+				$new_url                  = null;
+			}
+
+			$targets[ $link_id ] = $new_url;
+		}
+
+		foreach ( $groups as $post_id => $by_link ) {
+			foreach ( $by_link as $link_id => $instances ) {
+				$new_url = $targets[ $link_id ];
+
+				if ( null === $new_url ) {
+					continue;
+				}
+
+				if ( is_wp_error( $new_url ) ) {
+					$summary['skipped'][] = $this->skip_entry( $post_id, $new_url );
+					continue;
+				}
+
+				// A final URL equal to another selected URL would shift that URL's occurrences.
+				$collides = '' !== $new_url && array_filter(
+					$by_link,
+					static function ( $other ) use ( $new_url ) {
+						return $other[0]->raw_href === $new_url;
+					}
+				);
+
+				$result = $collides
+					? new WP_Error( 'seekfix_fix_separately', __( 'Two of the selected links in this post end at the same URL. Fix them one at a time.', 'seekfix' ) )
+					: $this->fix_post( $post_id, $links[ $link_id ], $action, $new_url, $instances, false );
+
+				if ( is_wp_error( $result ) ) {
+					$summary['skipped'][] = $this->skip_entry( $post_id, $result );
+				} else {
+					$summary['fixed'][] = $result;
+				}
+			}
+		}
+
+		return $summary;
+	}
+
+	/**
 	 * Counts what fix_link() would change, for the confirmation dialog.
 	 *
 	 * @param int    $link_id Row ID in seekfix_links.

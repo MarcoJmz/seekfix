@@ -139,6 +139,25 @@ CREATE TABLE {$actions} (
 	}
 
 	/**
+	 * Deletes every result, fix record and the scan state. Settings stay.
+	 *
+	 * Posts and revisions are not touched. Uses DELETE rather than TRUNCATE,
+	 * which would commit an open transaction.
+	 */
+	public static function reset_data() {
+		global $wpdb;
+
+		foreach ( array( 'instances', 'links', 'actions' ) as $name ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Emptying the plugin's own tables.
+			$wpdb->query( $wpdb->prepare( 'DELETE FROM %i', self::table( $name ) ) );
+		}
+
+		delete_option( ScanController::OPTION );
+		delete_option( ScanController::LOCK );
+		delete_transient( Admin\AdminPage::COUNT_TRANSIENT );
+	}
+
+	/**
 	 * Full name of a plugin table.
 	 *
 	 * @param string $name "links", "instances" or "actions".

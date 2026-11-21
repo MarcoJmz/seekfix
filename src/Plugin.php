@@ -36,11 +36,19 @@ class Plugin {
 
 		self::$booted = true;
 
+		self::indexer()->register_hooks();
+
 		if ( is_admin() ) {
 			Installer::maybe_upgrade();
+			( new Admin\AdminPage() )->register_hooks();
 		}
 
-		self::indexer()->register_hooks();
+		add_action(
+			'rest_api_init',
+			static function () {
+				( new Rest\Controller() )->register_routes();
+			}
+		);
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'seekfix', Cli::class );
