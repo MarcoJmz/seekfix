@@ -43,6 +43,10 @@
 			</property>
 		</properties>
 	</rule>
+	<!-- Classes in src/ follow PSR-4 file names (Html/TagLocator.php), loaded by Composer. -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>/src/</exclude-pattern>
+	</rule>
 	<rule ref="WordPress.WhiteSpace.ControlStructureSpacing">
 		<properties>
 			<property name="blank_line_check" value="true"/>
