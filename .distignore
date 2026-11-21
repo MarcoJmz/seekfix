@@ -37,6 +37,7 @@ webpack.config.js
 wp-cli.local.yml
 .wp-env.json
 .wp-env.override.json
+.corpus
 yarn.lock
 tests
 vendor

@@ -78,6 +78,32 @@ class InstanceRepository {
 	}
 
 	/**
+	 * Returns an instance by ID.
+	 *
+	 * @param int $id Row ID.
+	 * @return object|null
+	 */
+	public function get( $id ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		return $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', Installer::table( 'instances' ), $id ) );
+	}
+
+	/**
+	 * Returns all instances of a URL, grouped by post.
+	 *
+	 * @param int $link_id Row ID in seekfix_links.
+	 * @return object[]
+	 */
+	public function for_link( $link_id ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		return $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE link_id = %d ORDER BY post_id, id', Installer::table( 'instances' ), $link_id ) );
+	}
+
+	/**
 	 * Returns all instances of a post, in insertion order.
 	 *
 	 * @param int $post_id Post ID.

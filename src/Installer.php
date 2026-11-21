@@ -19,7 +19,7 @@ class Installer {
 	/**
 	 * Schema version stored in the seekfix_db_version option.
 	 */
-	const DB_VERSION = '2';
+	const DB_VERSION = '3';
 
 	/**
 	 * Option that stores the installed schema version.
@@ -120,11 +120,13 @@ CREATE TABLE {$inst} (
 CREATE TABLE {$actions} (
   id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   post_id bigint(20) unsigned NOT NULL,
+  link_id bigint(20) unsigned DEFAULT NULL,
   action varchar(20) NOT NULL,
   old_url text NOT NULL,
   new_url text DEFAULT NULL,
   revision_id bigint(20) unsigned DEFAULT NULL,
   old_content longtext DEFAULT NULL,
+  content_hash char(40) NOT NULL DEFAULT '',
   user_id bigint(20) unsigned NOT NULL,
   created_at datetime NOT NULL,
   undone_at datetime DEFAULT NULL,
