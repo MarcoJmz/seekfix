@@ -27,6 +27,9 @@ require_once "{$seekfix_tests_dir}/includes/functions.php";
  */
 function seekfix_tests_load_plugin() {
 	require dirname( __DIR__ ) . '/seekfix.php';
+
+	// The activation hook does not run in tests; create the tables before the suite cleans up posts.
+	\SeekFix\Installer::install();
 }
 
 tests_add_filter( 'muplugins_loaded', 'seekfix_tests_load_plugin' );
