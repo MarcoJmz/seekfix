@@ -76,6 +76,84 @@ class LinkRepository {
 	}
 
 	/**
+	 * Returns the URLs due for a check, oldest first, skipping ignored ones.
+	 *
+	 * @param string $now   Current UTC time, "Y-m-d H:i:s".
+	 * @param int    $limit Maximum rows.
+	 * @return object[]
+	 */
+	public function due( $now, $limit ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Work queue; must not be cached.
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE ignored = 0 AND next_check_at <= %s ORDER BY next_check_at ASC, id ASC LIMIT %d',
+				Installer::table( 'links' ),
+				$now,
+				$limit
+			)
+		);
+	}
+
+	/**
+	 * Saves the outcome of a check.
+	 *
+	 * @param int                  $id  Row ID.
+	 * @param array<string, mixed> $row Columns from ResponseClassifier::apply().
+	 * @return bool
+	 */
+	public function save_check( $id, array $row ) {
+		global $wpdb;
+
+		$allowed = array( 'status', 'http_code', 'error_code', 'ssl_invalid', 'final_url', 'redirect_chain', 'fail_count', 'fail_days', 'first_failure_at', 'last_checked_at', 'next_check_at' );
+		$row     = array_intersect_key( $row, array_flip( $allowed ) );
+
+		if ( empty( $row ) ) {
+			return false;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		return false !== $wpdb->update( Installer::table( 'links' ), $row, array( 'id' => (int) $id ) );
+	}
+
+	/**
+	 * Marks a URL as ignored (taken out of the queue) or not.
+	 *
+	 * @param int  $id      Row ID.
+	 * @param bool $ignored Whether to ignore it.
+	 * @return bool
+	 */
+	public function set_ignored( $id, $ignored ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		return false !== $wpdb->update( Installer::table( 'links' ), array( 'ignored' => $ignored ? 1 : 0 ), array( 'id' => (int) $id ) );
+	}
+
+	/**
+	 * Counts URLs by status, ignored ones apart.
+	 *
+	 * @return array<string, int> Counts keyed by status, plus "ignored".
+	 */
+	public function count_by_status() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare( 'SELECT IF(ignored = 1, %s, status) AS s, COUNT(*) AS n FROM %i GROUP BY s', 'ignored', Installer::table( 'links' ) )
+		);
+
+		$counts = array();
+
+		foreach ( $rows as $row ) {
+			$counts[ $row->s ] = (int) $row->n;
+		}
+
+		return $counts;
+	}
+
+	/**
 	 * Deletes URLs that no longer appear in any post (daily cleanup).
 	 *
 	 * @return int Rows deleted.

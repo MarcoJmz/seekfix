@@ -41,6 +41,10 @@ class Plugin {
 		}
 
 		self::indexer()->register_hooks();
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			\WP_CLI::add_command( 'seekfix', Cli::class );
+		}
 	}
 
 	/**

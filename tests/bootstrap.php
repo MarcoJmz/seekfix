@@ -36,3 +36,7 @@ tests_add_filter( 'muplugins_loaded', 'seekfix_tests_load_plugin' );
 
 // Start up the WordPress testing environment.
 require "{$seekfix_tests_dir}/includes/bootstrap.php";
+
+// Test doubles.
+require_once __DIR__ . '/includes/class-seekfix-test-http-client.php';
+require_once __DIR__ . '/includes/class-seekfix-test-clock.php';

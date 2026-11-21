@@ -19,7 +19,7 @@ class Installer {
 	/**
 	 * Schema version stored in the seekfix_db_version option.
 	 */
-	const DB_VERSION = '1';
+	const DB_VERSION = '2';
 
 	/**
 	 * Option that stores the installed schema version.
@@ -91,6 +91,7 @@ class Installer {
   final_url text DEFAULT NULL,
   redirect_chain text DEFAULT NULL,
   fail_count tinyint(3) unsigned NOT NULL DEFAULT 0,
+  fail_days tinyint(3) unsigned NOT NULL DEFAULT 0,
   first_failure_at datetime DEFAULT NULL,
   last_checked_at datetime DEFAULT NULL,
   next_check_at datetime DEFAULT NULL,
