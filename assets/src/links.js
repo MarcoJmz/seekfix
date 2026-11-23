@@ -11,6 +11,7 @@ import {
 	Flex,
 	ToggleControl,
 } from '@wordpress/components';
+import { useViewportMatch } from '@wordpress/compose';
 import { DataViews } from '@wordpress/dataviews';
 import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -45,7 +46,19 @@ const DEFAULT_VIEW = {
 	filters: [ { field: 'status', operator: 'isAny', value: [ 'broken' ] } ],
 	titleField: 'url',
 	fields: [ 'status', 'element', 'anchor_text', 'post_title' ],
-	layout: {},
+	layout: {
+		// Width ranges, so the table fits its container and no column is
+		// pushed out of view. The URL (the primary column) takes the rest.
+		styles: {
+			status: { minWidth: 110, maxWidth: 200 },
+			element: { minWidth: 80, maxWidth: 140 },
+			anchor_text: { minWidth: 100, maxWidth: 220 },
+			post_title: { minWidth: 160, maxWidth: 280 },
+			posts: { minWidth: 90, maxWidth: 120 },
+			instances: { minWidth: 60, maxWidth: 80 },
+			last_checked_at: { minWidth: 120, maxWidth: 170 },
+		},
+	},
 };
 
 /**
@@ -295,6 +308,10 @@ export default function LinksTab() {
 	const notify = useNotify();
 	const [ view, setView ] = useState( initialView );
 	const [ byUrl, setByUrl ] = useState( false );
+	// Primary actions show as text buttons that keep their width even while
+	// hidden, so on narrower screens they go to the actions menu and leave the
+	// room to the URL.
+	const roomy = useViewportMatch( 'huge' );
 	const [ data, setData ] = useState( { items: [], total: 0, pages: 1 } );
 	const [ loading, setLoading ] = useState( true );
 	const [ hosts, setHosts ] = useState( [] );
@@ -408,7 +425,7 @@ export default function LinksTab() {
 		const fixAction = ( action, bulk ) => ( {
 			id: action,
 			label: ACTION_LABELS[ action ],
-			isPrimary: action !== 'use_final_url',
+			isPrimary: roomy && action !== 'use_final_url',
 			supportsBulk: bulk,
 			isEligible: ( item ) =>
 				item.actions.includes( action ) && ! item.ignored,
@@ -508,7 +525,7 @@ export default function LinksTab() {
 					),
 			},
 		];
-	}, [ byUrl, onFixed, perLink ] );
+	}, [ byUrl, onFixed, perLink, roomy ] );
 
 	const fields = useMemo(
 		() => buildFields( byUrl, hosts ),

@@ -101,11 +101,33 @@
 	.dataviews-wrapper {
 		min-height: 400px;
 	}
+
+	// DataViews keeps cell content on one line, so a long URL or title widens
+	// its column and pushes the last columns out of view. Let it wrap.
+	.dataviews-view-table td .dataviews-view-table__cell-content-wrapper {
+		white-space: normal;
+	}
+
+	// DataViews also gives every cell a 15ch minimum, which overrides the
+	// column widths in the view's layout. The URL column keeps it.
+	.dataviews-view-table__cell-content-wrapper:not(.dataviews-title-field) {
+		min-width: 0;
+	}
 }
 
 .seekfix-url,
 .seekfix-break {
 	word-break: break-all;
+}
+
+// ExternalLink keeps its text on one line.
+.seekfix-url .components-external-link {
+	white-space: normal;
+}
+
+// Titles and link text wrap between words; long words still break.
+.seekfix-links td {
+	overflow-wrap: anywhere;
 }
 
 .seekfix-status.is-broken {
