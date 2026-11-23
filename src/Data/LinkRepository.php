@@ -113,8 +113,58 @@ class LinkRepository {
 			return false;
 		}
 
+		if ( isset( $row['status'] ) && 'broken' !== $row['status'] ) {
+			// A URL that works again is reported again if it breaks later.
+			$row['notified_at'] = null;
+		}
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
 		return false !== $wpdb->update( Installer::table( 'links' ), $row, array( 'id' => (int) $id ) );
+	}
+
+	/**
+	 * Returns the IDs of broken URLs not yet sent by e-mail.
+	 *
+	 * Only URLs that still appear in some post and are not ignored count.
+	 *
+	 * @return int[] Row IDs, oldest first.
+	 */
+	public function unnotified_broken_ids() {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table; must be fresh.
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				'SELECT l.id FROM %i l WHERE l.status = %s AND l.ignored = 0 AND l.notified_at IS NULL AND EXISTS (SELECT 1 FROM %i i WHERE i.link_id = l.id) ORDER BY l.id',
+				Installer::table( 'links' ),
+				'broken',
+				Installer::table( 'instances' )
+			)
+		);
+
+		return array_map( 'intval', $ids );
+	}
+
+	/**
+	 * Records that some URLs were sent by e-mail.
+	 *
+	 * @param int[]  $ids Row IDs.
+	 * @param string $now UTC time, "Y-m-d H:i:s".
+	 * @return int Rows changed.
+	 */
+	public function mark_notified( array $ids, $now ) {
+		global $wpdb;
+
+		$changed = 0;
+
+		foreach ( array_chunk( array_map( 'intval', $ids ), 500 ) as $chunk ) {
+			$placeholders = implode( ', ', array_fill( 0, count( $chunk ), '%d' ) );
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom table; one %d per ID.
+			$changed += (int) $wpdb->query( $wpdb->prepare( "UPDATE %i SET notified_at = %s WHERE id IN ({$placeholders})", array_merge( array( Installer::table( 'links' ), $now ), $chunk ) ) );
+		}
+
+		return $changed;
 	}
 
 	/**

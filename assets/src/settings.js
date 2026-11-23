@@ -1,5 +1,5 @@
 /**
- * Settings tab: what to scan, domain rules and deleting the plugin's data.
+ * Settings tab: what to scan, e-mail, domain rules and deleting the plugin's data.
  */
 import {
 	Button,
@@ -14,12 +14,12 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 import { api } from './api';
 import { useNotify } from './notices';
 
-const { postTypes = [] } = window.seekfixAdmin || {};
+const { postTypes = [], adminEmail = '' } = window.seekfixAdmin || {};
 
 const toLines = ( list ) => ( list || [] ).join( '\n' );
 const fromLines = ( text ) =>
@@ -33,6 +33,7 @@ export default function SettingsTab() {
 	const [ settings, setSettings ] = useState( null );
 	const [ unverifiable, setUnverifiable ] = useState( '' );
 	const [ exclude, setExclude ] = useState( '' );
+	const [ recipients, setRecipients ] = useState( '' );
 	const [ saving, setSaving ] = useState( false );
 	const [ confirmReset, setConfirmReset ] = useState( false );
 
@@ -40,6 +41,7 @@ export default function SettingsTab() {
 		setSettings( saved );
 		setUnverifiable( toLines( saved.host_rules.unverifiable ) );
 		setExclude( toLines( saved.host_rules.exclude ) );
+		setRecipients( toLines( saved.email_recipients ) );
 	};
 
 	useEffect( () => {
@@ -67,9 +69,13 @@ export default function SettingsTab() {
 	const save = () => {
 		setSaving( true );
 
+		const typed = fromLines( recipients );
+
 		api.saveSettings( {
 			post_types: settings.post_types,
 			include_drafts: settings.include_drafts,
+			email_enabled: settings.email_enabled,
+			email_recipients: typed,
 			host_rules: {
 				unverifiable: fromLines( unverifiable ),
 				exclude: fromLines( exclude ),
@@ -83,6 +89,15 @@ export default function SettingsTab() {
 						'seekfix'
 					)
 				);
+
+				if ( saved.email_recipients.length < typed.length ) {
+					notify(
+						__(
+							'Some e-mail addresses were not valid and were removed.',
+							'seekfix'
+						)
+					);
+				}
 			} )
 			.catch( ( error ) => notify( error.message, { status: 'error' } ) )
 			.finally( () => setSaving( false ) );
@@ -137,6 +152,49 @@ export default function SettingsTab() {
 							} )
 						}
 					/>
+				</CardBody>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<h2>{ __( 'E-mail', 'seekfix' ) }</h2>
+				</CardHeader>
+				<CardBody>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __(
+							'E-mail me when a scan finds new broken links',
+							'seekfix'
+						) }
+						help={ __(
+							'One e-mail per scan. Each link is reported once.',
+							'seekfix'
+						) }
+						checked={ settings.email_enabled }
+						onChange={ ( value ) =>
+							setSettings( {
+								...settings,
+								email_enabled: value,
+							} )
+						}
+					/>
+					{ settings.email_enabled && (
+						<TextareaControl
+							__nextHasNoMarginBottom
+							label={ __( 'Send to', 'seekfix' ) }
+							help={ sprintf(
+								/* translators: %s: the site's admin e-mail address. */
+								__(
+									'One address per line. Leave it empty to use the site admin address (%s).',
+									'seekfix'
+								),
+								adminEmail
+							) }
+							value={ recipients }
+							onChange={ setRecipients }
+							rows={ 3 }
+						/>
+					) }
 				</CardBody>
 			</Card>
 

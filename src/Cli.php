@@ -254,6 +254,31 @@ class Cli {
 	}
 
 	/**
+	 * Sends the broken link e-mail now, if it is on and there is something new.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seekfix notify
+	 *
+	 * @param array $args       Positional arguments.
+	 * @param array $assoc_args Named arguments.
+	 */
+	public function notify( $args, $assoc_args ) {
+		if ( ! Settings::notification_recipients() ) {
+			WP_CLI::warning( 'Broken link e-mails are off.' );
+			return;
+		}
+
+		$sent = ( new Notifier() )->send();
+
+		if ( $sent > 0 ) {
+			WP_CLI::success( sprintf( 'Reported %d broken URLs.', $sent ) );
+		} else {
+			WP_CLI::log( 'Nothing sent: no new broken URLs, or wp_mail() failed.' );
+		}
+	}
+
+	/**
 	 * Shows how many URLs there are in each status.
 	 *
 	 * @param array $args       Positional arguments.

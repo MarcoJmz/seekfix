@@ -198,6 +198,7 @@ class ScanController {
 		}
 
 		$deadline = $this->now() + $budget;
+		$finished = false;
 
 		try {
 			while ( $this->now() < $deadline ) {
@@ -228,6 +229,7 @@ class ScanController {
 						$state['status']           = self::IDLE;
 						$state['last_finished_at'] = $this->mysql_now();
 						$this->save( $state );
+						$finished = true;
 					}
 
 					// Nothing due yet: confirmations wait their 45 s.
@@ -236,6 +238,15 @@ class ScanController {
 			}
 		} finally {
 			$this->unlock();
+		}
+
+		if ( $finished ) {
+			/**
+			 * Fires once when a full scan has checked every URL.
+			 *
+			 * @param array<string, mixed> $progress Progress, as progress() returns it.
+			 */
+			do_action( 'seekfix_scan_finished', $this->progress() );
 		}
 
 		return $this->progress();

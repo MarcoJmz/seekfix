@@ -73,6 +73,25 @@ class Settings {
 	}
 
 	/**
+	 * Addresses that get the broken link e-mail, or none when it is off.
+	 *
+	 * With no address saved, the e-mail goes to the site's admin address.
+	 *
+	 * @return string[]
+	 */
+	public static function notification_recipients() {
+		$settings = self::for_editing();
+
+		if ( ! $settings['email_enabled'] ) {
+			return array();
+		}
+
+		$recipients = $settings['email_recipients'] ? $settings['email_recipients'] : array( (string) get_option( 'admin_email' ) );
+
+		return array_values( array_filter( $recipients, 'is_email' ) );
+	}
+
+	/**
 	 * Scan schedules.
 	 */
 	const SCHEDULES = array( 'off', 'daily', 'weekly' );

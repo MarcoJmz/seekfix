@@ -190,6 +190,7 @@ class AdminPage {
 		return array(
 			'postTypes'    => $types,
 			'revisionsUrl' => admin_url( 'revision.php' ),
+			'adminEmail'   => (string) get_option( 'admin_email' ),
 		);
 	}
 }

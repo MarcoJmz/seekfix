@@ -37,6 +37,7 @@ class Plugin {
 		self::$booted = true;
 
 		self::indexer()->register_hooks();
+		( new Notifier() )->register_hooks();
 
 		if ( is_admin() ) {
 			Installer::maybe_upgrade();
