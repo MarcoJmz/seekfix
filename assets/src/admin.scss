@@ -113,6 +113,79 @@
 	.dataviews-view-table__cell-content-wrapper:not(.dataviews-title-field) {
 		min-width: 0;
 	}
+
+	// Column widths include the padding, so a dragged width is the width shown.
+	.dataviews-view-table th,
+	.dataviews-view-table td {
+		box-sizing: border-box;
+	}
+
+	// Header cells hold the resize handles (see column-widths.js).
+	.dataviews-view-table thead th:not(.dataviews-view-table__actions-column) {
+		position: relative;
+	}
+
+	// A URL column with a set width. DataViews sizes every other <col> to 1%,
+	// so the URL takes whatever is left; with its own width, the actions
+	// column takes the rest instead.
+	&.has-primary-width {
+
+		// The <col> sets the column; the cells' minimum makes the table grow
+		// past its container when the widths add up to more.
+		.dataviews-view-table col.dataviews-view-table__col-first-data {
+			width: var(--seekfix-primary-width);
+		}
+
+		.dataviews-view-table td:has(.dataviews-view-table__primary-column-content) {
+			width: var(--seekfix-primary-width);
+			min-width: var(--seekfix-primary-width);
+			max-width: var(--seekfix-primary-width);
+		}
+
+		.dataviews-view-table col.dataviews-view-table__col-actions.dataviews-view-table__col-actions {
+			width: auto;
+		}
+
+		.dataviews-title-field,
+		.dataviews-view-table__primary-column-content {
+			min-width: 0;
+			max-width: none;
+		}
+	}
+}
+
+.seekfix-col-resizer {
+	position: absolute;
+	z-index: 1;
+	top: 0;
+	bottom: 0;
+	inset-inline-end: -5px;
+	width: 10px;
+	cursor: col-resize;
+	touch-action: none;
+
+	&::after {
+		content: "";
+		position: absolute;
+		top: 20%;
+		bottom: 20%;
+		inset-inline-start: 4px;
+		width: 2px;
+		border-radius: 1px;
+		background: #dcdcde;
+	}
+
+	&:hover::after,
+	&.is-dragging::after,
+	&:focus-visible::after {
+		top: 0;
+		bottom: 0;
+		background: var(--wp-admin-theme-color, #3858e9);
+	}
+
+	&:focus {
+		outline: none;
+	}
 }
 
 .seekfix-url,

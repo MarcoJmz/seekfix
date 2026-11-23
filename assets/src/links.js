@@ -18,6 +18,12 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 
 import { api } from './api';
 import {
+	ColumnResizers,
+	applyWidths,
+	primaryWidthProps,
+	useColumnWidths,
+} from './column-widths';
+import {
 	ACTION_LABELS,
 	EditLink,
 	FixDialog,
@@ -50,13 +56,13 @@ const DEFAULT_VIEW = {
 		// Width ranges, so the table fits its container and no column is
 		// pushed out of view. The URL (the primary column) takes the rest.
 		styles: {
-			status: { minWidth: 110, maxWidth: 200 },
-			element: { minWidth: 80, maxWidth: 140 },
-			anchor_text: { minWidth: 100, maxWidth: 220 },
-			post_title: { minWidth: 160, maxWidth: 280 },
-			posts: { minWidth: 90, maxWidth: 120 },
-			instances: { minWidth: 60, maxWidth: 80 },
-			last_checked_at: { minWidth: 120, maxWidth: 170 },
+			status: { minWidth: 135, maxWidth: 225 },
+			element: { minWidth: 105, maxWidth: 165 },
+			anchor_text: { minWidth: 125, maxWidth: 245 },
+			post_title: { minWidth: 185, maxWidth: 305 },
+			posts: { minWidth: 115, maxWidth: 145 },
+			instances: { minWidth: 85, maxWidth: 105 },
+			last_checked_at: { minWidth: 145, maxWidth: 195 },
 		},
 	},
 };
@@ -532,6 +538,34 @@ export default function LinksTab() {
 		[ byUrl, hosts ]
 	);
 
+	// State, not a ref: the handles need the element once it exists.
+	const [ table, setTable ] = useState( null );
+	const columnWidths = useColumnWidths();
+	const { widths, resetAll } = columnWidths;
+	const shownView = useMemo(
+		() => applyWidths( view, widths ),
+		[ view, widths ]
+	);
+	const primaryWidth = primaryWidthProps( view, widths );
+	const labels = useMemo(
+		() =>
+			Object.fromEntries(
+				fields.map( ( field ) => [ field.id, field.label ] )
+			),
+		[ fields ]
+	);
+
+	// The widths are applied on top of the view; keep them out of its state,
+	// so resetting a width brings back the default range.
+	const changeView = useCallback(
+		( next ) =>
+			setView( {
+				...next,
+				layout: { ...next.layout, styles: DEFAULT_VIEW.layout.styles },
+			} ),
+		[]
+	);
+
 	const toggleGroup = ( value ) => {
 		setByUrl( value );
 		setView( ( current ) => ( {
@@ -554,10 +588,22 @@ export default function LinksTab() {
 			.catch( ( error ) => notify( error.message, { status: 'error' } ) );
 
 	return (
-		<div className="seekfix-links">
+		<div
+			ref={ setTable }
+			className={ [ 'seekfix-links', primaryWidth.className ]
+				.filter( Boolean )
+				.join( ' ' ) }
+			style={ primaryWidth.style }
+		>
+			<ColumnResizers
+				container={ table }
+				columns={ [ view.titleField, ...view.fields ] }
+				labels={ labels }
+				widths={ columnWidths }
+			/>
 			<DataViews
-				view={ view }
-				onChangeView={ setView }
+				view={ shownView }
+				onChangeView={ changeView }
 				fields={ fields }
 				data={ data.items }
 				getItemId={ ( item ) => String( item.id ) }
@@ -582,6 +628,15 @@ export default function LinksTab() {
 							checked={ byUrl }
 							onChange={ toggleGroup }
 						/>
+						{ Object.keys( widths ).length > 0 && (
+							<Button
+								variant="tertiary"
+								size="compact"
+								onClick={ resetAll }
+							>
+								{ __( 'Reset column widths', 'seekfix' ) }
+							</Button>
+						) }
 						<Button
 							variant="secondary"
 							size="compact"
