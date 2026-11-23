@@ -15,8 +15,7 @@ use SeekFix\Data\LinkRepository;
  * Each step does as much as fits in its time budget and saves its cursor in
  * the seekfix_scan_state option (no autoload). The admin screen asks for a
  * step every few seconds while it is open, so a scan finishes even when
- * WP-Cron does not run. Scheduled steps with Action Scheduler use the same
- * entry point.
+ * WP-Cron does not run. Otherwise Scheduler runs the steps with WP-Cron.
  */
 class ScanController {
 
@@ -134,6 +133,7 @@ class ScanController {
 
 		$this->save( $state );
 		$this->links->make_all_due( $now );
+		Scheduler::queue_step();
 
 		return $this->progress();
 	}
@@ -165,6 +165,7 @@ class ScanController {
 		if ( self::PAUSED === $state['status'] ) {
 			$state['status'] = self::RUNNING;
 			$this->save( $state );
+			Scheduler::queue_step();
 		}
 
 		return $this->progress();

@@ -110,6 +110,10 @@
 	.components-textarea-control {
 		margin-bottom: 16px;
 	}
+
+	.components-toggle-control + .components-textarea-control {
+		margin-top: 16px;
+	}
 }
 
 .seekfix-snackbars {

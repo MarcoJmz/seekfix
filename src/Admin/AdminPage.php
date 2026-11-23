@@ -191,6 +191,7 @@ class AdminPage {
 			'postTypes'    => $types,
 			'revisionsUrl' => admin_url( 'revision.php' ),
 			'adminEmail'   => (string) get_option( 'admin_email' ),
+			'cronDisabled' => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
 		);
 	}
 }

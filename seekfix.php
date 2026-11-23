@@ -42,5 +42,6 @@ spl_autoload_register(
 );
 
 register_activation_hook( __FILE__, array( 'SeekFix\\Installer', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'SeekFix\\Installer', 'deactivate' ) );
 
 add_action( 'plugins_loaded', array( 'SeekFix\\Plugin', 'boot' ) );

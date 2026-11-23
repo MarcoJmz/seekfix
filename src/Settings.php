@@ -151,6 +151,7 @@ class Settings {
 		}
 
 		update_option( self::OPTION, $clean, false );
+		Scheduler::sync();
 
 		return self::for_editing();
 	}

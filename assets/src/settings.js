@@ -1,5 +1,6 @@
 /**
- * Settings tab: what to scan, e-mail, domain rules and deleting the plugin's data.
+ * Settings tab: what to scan, automatic scans, e-mail, domain rules and
+ * deleting the plugin's data.
  */
 import {
 	Button,
@@ -9,6 +10,7 @@ import {
 	CheckboxControl,
 	Flex,
 	Modal,
+	SelectControl,
 	Spinner,
 	TextareaControl,
 	ToggleControl,
@@ -74,6 +76,7 @@ export default function SettingsTab() {
 		api.saveSettings( {
 			post_types: settings.post_types,
 			include_drafts: settings.include_drafts,
+			schedule: settings.schedule,
 			email_enabled: settings.email_enabled,
 			email_recipients: typed,
 			host_rules: {
@@ -150,6 +153,38 @@ export default function SettingsTab() {
 								...settings,
 								include_drafts: value,
 							} )
+						}
+					/>
+				</CardBody>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<h2>{ __( 'Automatic scans', 'seekfix' ) }</h2>
+				</CardHeader>
+				<CardBody>
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __( 'Scan all content', 'seekfix' ) }
+						help={ __(
+							'Scans start around 3:00 site time and run in the background with WP-Cron, which needs visits to the site or a server cron job.',
+							'seekfix'
+						) }
+						value={ settings.schedule }
+						options={ [
+							{ value: 'off', label: __( 'Never', 'seekfix' ) },
+							{
+								value: 'daily',
+								label: __( 'Every day', 'seekfix' ),
+							},
+							{
+								value: 'weekly',
+								label: __( 'Every week', 'seekfix' ),
+							},
+						] }
+						onChange={ ( value ) =>
+							setSettings( { ...settings, schedule: value } )
 						}
 					/>
 				</CardBody>

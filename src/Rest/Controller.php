@@ -14,6 +14,7 @@ use SeekFix\Data\ReportQuery;
 use SeekFix\FixService;
 use SeekFix\Installer;
 use SeekFix\ScanController;
+use SeekFix\Scheduler;
 use SeekFix\Settings;
 use SeekFix\UndoService;
 use WP_Error;
@@ -168,11 +169,14 @@ class Controller {
 			( new LinkRepository() )->count_by_status()
 		);
 
+		$next = Scheduler::next_scan();
+
 		return rest_ensure_response(
 			array(
-				'counts' => $counts,
-				'total'  => array_sum( $counts ),
-				'scan'   => $this->format_progress( ( new ScanController() )->progress() ),
+				'counts'       => $counts,
+				'total'        => array_sum( $counts ),
+				'scan'         => $this->format_progress( ( new ScanController() )->progress() ),
+				'next_scan_at' => $next ? gmdate( 'c', $next ) : null,
 			)
 		);
 	}

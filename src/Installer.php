@@ -52,6 +52,14 @@ class Installer {
 		}
 
 		self::install();
+		Scheduler::sync();
+	}
+
+	/**
+	 * Deactivation hook: removes the scheduled events. Data and settings stay.
+	 */
+	public static function deactivate() {
+		Scheduler::clear();
 	}
 
 	/**

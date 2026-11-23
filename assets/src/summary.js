@@ -2,7 +2,8 @@
  * Summary tab: counts, scan progress and scan controls.
  *
  * While a scan runs, the tab asks the server for one scan step every five
- * seconds, so the scan finishes even when WP-Cron does not run.
+ * seconds, so the scan finishes even when WP-Cron does not run. With WP-Cron
+ * it also continues in the background, more slowly.
  */
 import {
 	Button,
@@ -21,6 +22,8 @@ import { formatDate } from './labels';
 import { useNotify } from './notices';
 
 const POLL_MS = 5000;
+
+const { cronDisabled = false } = window.seekfixAdmin || {};
 
 /**
  * One count card.
@@ -136,7 +139,7 @@ export default function SummaryTab() {
 		return <Spinner />;
 	}
 
-	const { counts, scan } = summary;
+	const { counts, scan, next_scan_at: nextScanAt } = summary;
 	const checked =
 		counts.ok + counts.redirect + counts.broken + counts.unverifiable;
 	const neverScanned = ! scan.last_finished_at && scan.status === 'idle';
@@ -227,12 +230,26 @@ export default function SummaryTab() {
 					) }
 				</p>
 			) }
+			{ nextScanAt && scan.status === 'idle' && (
+				<p className="seekfix-muted">
+					{ sprintf(
+						/* translators: %s: date and time. */
+						__( 'Next automatic scan: %s', 'seekfix' ),
+						formatDate( nextScanAt )
+					) }
+				</p>
+			) }
 			{ running && (
 				<p className="seekfix-muted">
-					{ __(
-						'Keep this screen open until the scan finishes. Links that fail once are checked again before they are marked broken.',
-						'seekfix'
-					) }
+					{ cronDisabled
+						? __(
+								'Keep this screen open until the scan finishes. Links that fail once are checked again before they are marked broken.',
+								'seekfix'
+							)
+						: __(
+								'You can leave this screen: the scan continues in the background, more slowly. Links that fail once are checked again before they are marked broken.',
+								'seekfix'
+							) }
 				</p>
 			) }
 		</div>

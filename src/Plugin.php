@@ -38,6 +38,7 @@ class Plugin {
 
 		self::indexer()->register_hooks();
 		( new Notifier() )->register_hooks();
+		( new Scheduler() )->register_hooks();
 
 		if ( is_admin() ) {
 			Installer::maybe_upgrade();

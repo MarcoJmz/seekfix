@@ -13,6 +13,9 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 global $wpdb;
 
+wp_clear_scheduled_hook( 'seekfix_scheduled_scan' );
+wp_clear_scheduled_hook( 'seekfix_scan_step' );
+
 foreach ( array( 'links', 'instances', 'actions' ) as $seekfix_table ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Dropping the plugin's own tables on uninstall.
 	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'seekfix_' . $seekfix_table ) );
