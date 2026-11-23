@@ -16,9 +16,11 @@ import {
 } from '@wordpress/components';
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import { Icon, chevronRight } from '@wordpress/icons';
 
 import { api } from './api';
 import { formatDate } from './labels';
+import { linksUrl } from './navigation';
 import { useNotify } from './notices';
 
 const POLL_MS = 5000;
@@ -26,23 +28,67 @@ const POLL_MS = 5000;
 const { cronDisabled = false } = window.seekfixAdmin || {};
 
 /**
- * One count card.
+ * One count card. With a status, the whole card links to the Links tab
+ * filtered by it.
  *
- * @param {Object} props       Props.
- * @param {string} props.label Label.
- * @param {number} props.value Value.
- * @param {string} props.tone  Extra class.
+ * @param {Object}                   props        Props.
+ * @param {string}                   props.label  Label.
+ * @param {number}                   props.value  Value.
+ * @param {string}                   props.tone   Extra class.
+ * @param {string}                   props.status Status to filter the Links tab by.
+ * @param {(status: string) => void} props.onOpen Opens the Links tab without reloading.
  * @return {Element} Element.
  */
-function Stat( { label, value, tone = '' } ) {
+function Stat( { label, value, tone = '', status, onOpen } ) {
+	const body = (
+		<>
+			<div className="seekfix-stat__value">
+				{ Number( value || 0 ).toLocaleString() }
+			</div>
+			<div className="seekfix-stat__label">{ label }</div>
+		</>
+	);
+
+	if ( ! status ) {
+		return (
+			<Card className={ `seekfix-stat ${ tone }` } size="small">
+				<CardBody>{ body }</CardBody>
+			</Card>
+		);
+	}
+
+	// A plain click switches tabs in place; Ctrl/Cmd-click and middle
+	// click open the URL in a new tab as usual.
+	const open = ( event ) => {
+		if (
+			event.button !== 0 ||
+			event.metaKey ||
+			event.ctrlKey ||
+			event.shiftKey ||
+			event.altKey
+		) {
+			return;
+		}
+
+		event.preventDefault();
+		onOpen( status );
+	};
+
 	return (
-		<Card className={ `seekfix-stat ${ tone }` } size="small">
-			<CardBody>
-				<div className="seekfix-stat__value">
-					{ Number( value || 0 ).toLocaleString() }
-				</div>
-				<div className="seekfix-stat__label">{ label }</div>
-			</CardBody>
+		<Card className={ `seekfix-stat is-link ${ tone }` } size="small">
+			<a
+				className="seekfix-stat__link"
+				href={ linksUrl( status ) }
+				onClick={ open }
+			>
+				<CardBody>
+					{ body }
+					<span className="seekfix-stat__more">
+						{ __( 'View links', 'seekfix' ) }
+						<Icon icon={ chevronRight } size={ 16 } />
+					</span>
+				</CardBody>
+			</a>
 		</Card>
 	);
 }
@@ -78,7 +124,7 @@ function ScanProgress( { scan } ) {
 	);
 }
 
-export default function SummaryTab() {
+export default function SummaryTab( { onOpenLinks } ) {
 	const notify = useNotify();
 	const [ summary, setSummary ] = useState( null );
 	const [ busy, setBusy ] = useState( false );
@@ -160,14 +206,20 @@ export default function SummaryTab() {
 					label={ __( 'Broken', 'seekfix' ) }
 					value={ counts.broken }
 					tone="is-broken"
+					status="broken"
+					onOpen={ onOpenLinks }
 				/>
 				<Stat
 					label={ __( 'Cannot verify', 'seekfix' ) }
 					value={ counts.unverifiable }
+					status="unverifiable"
+					onOpen={ onOpenLinks }
 				/>
 				<Stat
 					label={ __( 'Redirects', 'seekfix' ) }
 					value={ counts.redirect }
+					status="redirect"
+					onOpen={ onOpenLinks }
 				/>
 				<Stat label={ __( 'Checked', 'seekfix' ) } value={ checked } />
 				<Stat

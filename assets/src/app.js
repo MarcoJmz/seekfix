@@ -2,8 +2,10 @@
  * The screen: Summary, Links and Settings tabs.
  */
 import { TabPanel } from '@wordpress/components';
+import { useCallback, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
+import { replaceArgs } from './navigation';
 import { NoticesProvider } from './notices';
 import SummaryTab from './summary';
 import LinksTab from './links';
@@ -32,16 +34,22 @@ function initialTab() {
  * @param {string} tab Tab name.
  */
 function rememberTab( tab ) {
-	const url = new URL( window.location.href );
-
-	url.searchParams.set( 'tab', tab );
-	window.history.replaceState( null, '', url );
+	replaceArgs( { tab } );
 }
 
 export default function App() {
+	// TabPanel only takes an initial tab, so opening a tab from code remounts it.
+	const [ mount, setMount ] = useState( 0 );
+
+	const openLinks = useCallback( ( status ) => {
+		replaceArgs( { tab: 'links', status } );
+		setMount( ( n ) => n + 1 );
+	}, [] );
+
 	return (
 		<NoticesProvider>
 			<TabPanel
+				key={ mount }
 				className="seekfix-tabs"
 				tabs={ TABS }
 				initialTabName={ initialTab() }
@@ -49,7 +57,9 @@ export default function App() {
 			>
 				{ ( tab ) => (
 					<div className="seekfix-tab">
-						{ tab.name === 'summary' && <SummaryTab /> }
+						{ tab.name === 'summary' && (
+							<SummaryTab onOpenLinks={ openLinks } />
+						) }
 						{ tab.name === 'links' && <LinksTab /> }
 						{ tab.name === 'settings' && <SettingsTab /> }
 					</div>

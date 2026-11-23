@@ -33,6 +33,49 @@
 	color: #b32d2e;
 }
 
+.seekfix-stat.is-link {
+	transition: box-shadow 0.1s ease;
+
+	&:hover,
+	&:focus-within {
+		box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #3858e9);
+	}
+}
+
+.seekfix-stat__link {
+	display: block;
+	height: 100%;
+	color: inherit;
+	text-decoration: none;
+	border-radius: inherit;
+
+	&:hover,
+	&:focus {
+		color: inherit;
+	}
+
+	&:focus {
+		box-shadow: none;
+		outline: none;
+	}
+
+	&:focus-visible {
+		box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #3858e9);
+	}
+}
+
+.seekfix-stat__more {
+	display: flex;
+	align-items: center;
+	margin-top: 8px;
+	color: var(--wp-admin-theme-color, #3858e9);
+	font-size: 12px;
+
+	svg {
+		fill: currentcolor;
+	}
+}
+
 .seekfix-stat__label,
 .seekfix-muted {
 	color: #646970;

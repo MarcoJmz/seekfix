@@ -31,6 +31,7 @@ import {
 	formatDate,
 	labelOf,
 } from './labels';
+import { replaceArgs, statusesFromUrl } from './navigation';
 import { useNotify } from './notices';
 
 const { postTypes = [] } = window.seekfixAdmin || {};
@@ -46,6 +47,38 @@ const DEFAULT_VIEW = {
 	fields: [ 'status', 'element', 'anchor_text', 'post_title' ],
 	layout: {},
 };
+
+/**
+ * First view: the default one, with the status filter from ?status= if any.
+ *
+ * @return {Object} View.
+ */
+function initialView() {
+	const statuses = statusesFromUrl();
+
+	return statuses.length
+		? {
+				...DEFAULT_VIEW,
+				filters: [
+					{ field: 'status', operator: 'isAny', value: statuses },
+				],
+			}
+		: DEFAULT_VIEW;
+}
+
+/**
+ * Status filter values of a view.
+ *
+ * @param {Object} view View.
+ * @return {string[]} Statuses; empty when there is no status filter.
+ */
+function statusesOf( view ) {
+	const filter = ( view.filters || [] ).find(
+		( item ) => item.field === 'status'
+	);
+
+	return filter && Array.isArray( filter.value ) ? filter.value : [];
+}
 
 const GROUP_FIELDS = [ 'status', 'posts', 'instances' ];
 const INSTANCE_FIELDS = DEFAULT_VIEW.fields;
@@ -257,7 +290,7 @@ function download( csv ) {
 
 export default function LinksTab() {
 	const notify = useNotify();
-	const [ view, setView ] = useState( DEFAULT_VIEW );
+	const [ view, setView ] = useState( initialView );
 	const [ byUrl, setByUrl ] = useState( false );
 	const [ data, setData ] = useState( { items: [], total: 0, pages: 1 } );
 	const [ loading, setLoading ] = useState( true );
@@ -266,6 +299,12 @@ export default function LinksTab() {
 
 	const refresh = useCallback( () => setReload( ( n ) => n + 1 ), [] );
 	const query = useMemo( () => toQuery( view, byUrl ), [ view, byUrl ] );
+	const statusArg = statusesOf( view ).join( ',' );
+
+	// Keep the status filter in the URL, so a reload keeps it.
+	useEffect( () => {
+		replaceArgs( { status: statusArg || null } );
+	}, [ statusArg ] );
 
 	useEffect( () => {
 		api.hosts()
