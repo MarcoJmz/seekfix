@@ -8,6 +8,14 @@
 	}
 }
 
+// WordPress loads its own, older wp-components CSS on every admin screen. Its
+// checked toggle moves the thumb with transform: translateX(16px), while the
+// bundled version moves it with inset-inline-start; both together push the
+// thumb onto the label.
+.seekfix-wrap .components-form-toggle.is-checked .components-form-toggle__thumb {
+	transform: none;
+}
+
 .seekfix-stats {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
