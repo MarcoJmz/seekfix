@@ -31,7 +31,7 @@ import {
 	formatDate,
 	labelOf,
 } from './labels';
-import { replaceArgs, statusesFromUrl } from './navigation';
+import { ALL_STATUSES, replaceArgs, statusesFromUrl } from './navigation';
 import { useNotify } from './notices';
 
 const { postTypes = [] } = window.seekfixAdmin || {};
@@ -50,20 +50,23 @@ const DEFAULT_VIEW = {
 
 /**
  * First view: the default one, with the status filter from ?status= if any.
+ * ?status=all means no status filter.
  *
  * @return {Object} View.
  */
 function initialView() {
 	const statuses = statusesFromUrl();
 
-	return statuses.length
-		? {
-				...DEFAULT_VIEW,
-				filters: [
-					{ field: 'status', operator: 'isAny', value: statuses },
-				],
-			}
-		: DEFAULT_VIEW;
+	if ( statuses === null ) {
+		return DEFAULT_VIEW;
+	}
+
+	return {
+		...DEFAULT_VIEW,
+		filters: statuses.length
+			? [ { field: 'status', operator: 'isAny', value: statuses } ]
+			: [],
+	};
 }
 
 /**
@@ -299,11 +302,11 @@ export default function LinksTab() {
 
 	const refresh = useCallback( () => setReload( ( n ) => n + 1 ), [] );
 	const query = useMemo( () => toQuery( view, byUrl ), [ view, byUrl ] );
-	const statusArg = statusesOf( view ).join( ',' );
+	const statusArg = statusesOf( view ).join( ',' ) || ALL_STATUSES;
 
 	// Keep the status filter in the URL, so a reload keeps it.
 	useEffect( () => {
-		replaceArgs( { status: statusArg || null } );
+		replaceArgs( { status: statusArg } );
 	}, [ statusArg ] );
 
 	useEffect( () => {

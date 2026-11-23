@@ -1,5 +1,6 @@
 /**
- * The screen's state in the URL: ?tab=links&status=broken,redirect.
+ * The screen's state in the URL: ?tab=links&status=broken,redirect, or
+ * ?status=all for no status filter.
  *
  * replaceState keeps it without reloading, so a reload or a copied URL opens
  * the same tab with the same status filter.
@@ -46,17 +47,29 @@ export function linksUrl( status ) {
 }
 
 /**
+ * ?status= value meaning "no status filter".
+ */
+export const ALL_STATUSES = 'all';
+
+/**
  * Statuses from ?status=, unknown values dropped.
  *
- * @return {string[]} Statuses; empty when none.
+ * @return {string[]|null} Statuses; empty for ?status=all; null when the
+ *                         URL sets no valid status, so the default applies.
  */
 export function statusesFromUrl() {
 	const param =
 		new URLSearchParams( window.location.search ).get( 'status' ) || '';
 
-	return param
+	if ( param === ALL_STATUSES ) {
+		return [];
+	}
+
+	const statuses = param
 		.split( ',' )
 		.filter( ( value ) =>
 			STATUSES.some( ( status ) => status.value === value )
 		);
+
+	return statuses.length ? statuses : null;
 }
