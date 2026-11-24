@@ -15,6 +15,7 @@ global $wpdb;
 
 wp_clear_scheduled_hook( 'seekfix_scheduled_scan' );
 wp_clear_scheduled_hook( 'seekfix_scan_step' );
+wp_clear_scheduled_hook( 'seekfix_cleanup_history' );
 
 foreach ( array( 'links', 'instances', 'actions' ) as $seekfix_table ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Dropping the plugin's own tables on uninstall.

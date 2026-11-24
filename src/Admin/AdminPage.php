@@ -72,6 +72,72 @@ class AdminPage {
 			self::SLUG,
 			array( $this, 'render' )
 		);
+
+		if ( '' !== $this->hook ) {
+			add_action( 'load-' . $this->hook, array( $this, 'add_help' ) );
+		}
+	}
+
+	/**
+	 * Adds the screen's Help tab: what each part of the screen does.
+	 */
+	public function add_help() {
+		$screen = get_current_screen();
+
+		if ( ! $screen ) {
+			return;
+		}
+
+		$tabs = array(
+			'seekfix-overview' => array(
+				__( 'Overview', 'seekfix' ),
+				array(
+					__( 'SeekFix finds broken links in your content and lets you fix them from one screen. A scan has two steps: it reads your posts and pages to collect every link, button and image, then checks each different URL once.', 'seekfix' ),
+					__( 'The checks run on your server. Nothing is sent to an external service. A link that fails is checked again later before it is marked as broken, so a site that is down for a moment is not reported.', 'seekfix' ),
+				),
+			),
+			'seekfix-summary'  => array(
+				__( 'Summary', 'seekfix' ),
+				array(
+					__( 'Shows how many URLs are broken, cannot be verified or redirect, and the progress of the current scan. Click a count to see those links in the Links tab.', 'seekfix' ),
+					__( 'Start scan reads all the selected content. Pause stops the scan and Resume continues it where it stopped; Cancel ends it and keeps the results found so far.', 'seekfix' ),
+					__( '"Cannot verify" means the other site blocked the check or did not answer, which many large sites do with automated requests. These links may work in a browser: open them to check by hand.', 'seekfix' ),
+				),
+			),
+			'seekfix-links'    => array(
+				__( 'Links', 'seekfix' ),
+				array(
+					__( 'Lists each link with its status, the post it is in and its text. Filter by status, content type, domain or internal and external links, search by URL or link text, and export the list as CSV.', 'seekfix' ),
+					__( 'Fixes: Remove link keeps the text and removes the link; Remove button removes a button block; Replace URL changes the address; Update to final URL points a redirect straight to where it ends. Group by URL fixes the same URL in every post at once.', 'seekfix' ),
+					__( 'Before each fix the post gets a revision. Ignore hides a link you do not want to fix; Check again now checks it right away.', 'seekfix' ),
+				),
+			),
+			'seekfix-history'  => array(
+				__( 'History', 'seekfix' ),
+				array(
+					__( 'Lists every fix made from the Links tab: when, by whom, in which post and what changed. Undo puts the post back as it was before the fix.', 'seekfix' ),
+					__( 'A fix can be undone only while the post is exactly as the fix left it. If the post was edited afterwards, Compare revisions opens the WordPress revisions screen so you can restore it by hand without losing those edits.', 'seekfix' ),
+					__( 'Fixes older than the period chosen in Settings are removed from the history once a day. The revisions WordPress saved stay with each post.', 'seekfix' ),
+				),
+			),
+			'seekfix-settings' => array(
+				__( 'Settings', 'seekfix' ),
+				array(
+					__( 'Choose the content types to scan, whether drafts are included, how often a scan runs on its own, who gets an e-mail about new broken links, how long the fix history is kept, and domain rules for sites that block checks or should never be checked.', 'seekfix' ),
+					__( 'Automatic scans use WP-Cron. If your site turns WP-Cron off, keep the Summary tab open while a scan runs, or set up a server cron job.', 'seekfix' ),
+				),
+			),
+		);
+
+		foreach ( $tabs as $id => $tab ) {
+			$screen->add_help_tab(
+				array(
+					'id'      => $id,
+					'title'   => $tab[0],
+					'content' => '<p>' . implode( '</p><p>', array_map( 'esc_html', $tab[1] ) ) . '</p>',
+				)
+			);
+		}
 	}
 
 	/**

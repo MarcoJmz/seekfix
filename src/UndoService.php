@@ -21,6 +21,15 @@ use WP_Post;
 class UndoService {
 
 	/**
+	 * States of a fix in the history (see state()).
+	 */
+	const AVAILABLE   = 'available';
+	const UNDONE      = 'undone';
+	const EDITED      = 'edited';
+	const NO_POST     = 'no_post';
+	const NO_SNAPSHOT = 'no_snapshot';
+
+	/**
 	 * Fix history.
 	 *
 	 * @var ActionRepository
@@ -122,6 +131,38 @@ class UndoService {
 	}
 
 	/**
+	 * Whether a fix can still be undone, without changing anything.
+	 *
+	 * @param object $action Row of seekfix_actions; old_content may be left out
+	 *                       when the row has has_old_content.
+	 * @return string One of the state constants.
+	 */
+	public function state( $action ) {
+		if ( ! empty( $action->undone_at ) ) {
+			return self::UNDONE;
+		}
+
+		$post_id = (int) $action->post_id;
+		$post    = get_post( $post_id );
+
+		if ( ! $post instanceof WP_Post ) {
+			return self::NO_POST;
+		}
+
+		if ( sha1( $post->post_content ) !== $action->content_hash ) {
+			return self::EDITED;
+		}
+
+		$has_old = isset( $action->has_old_content ) ? (bool) $action->has_old_content : isset( $action->old_content );
+
+		if ( null === $this->revision( $action, $post_id ) && ! $has_old ) {
+			return self::NO_SNAPSHOT;
+		}
+
+		return self::AVAILABLE;
+	}
+
+	/**
 	 * Content before the fix, from its revision or from old_content.
 	 *
 	 * @param object $action  Row of seekfix_actions.
@@ -129,14 +170,29 @@ class UndoService {
 	 * @return string|null
 	 */
 	private function old_content( $action, $post_id ) {
-		if ( $action->revision_id ) {
-			$revision = get_post( (int) $action->revision_id );
+		$revision = $this->revision( $action, $post_id );
 
-			if ( $revision instanceof WP_Post && 'revision' === $revision->post_type && (int) $revision->post_parent === $post_id ) {
-				return $revision->post_content;
-			}
+		if ( $revision ) {
+			return $revision->post_content;
 		}
 
 		return null === $action->old_content ? null : (string) $action->old_content;
+	}
+
+	/**
+	 * Revision saved before the fix, if it still exists.
+	 *
+	 * @param object $action  Row of seekfix_actions.
+	 * @param int    $post_id Post the fix belongs to.
+	 * @return WP_Post|null
+	 */
+	private function revision( $action, $post_id ) {
+		if ( ! $action->revision_id ) {
+			return null;
+		}
+
+		$revision = get_post( (int) $action->revision_id );
+
+		return $revision instanceof WP_Post && 'revision' === $revision->post_type && (int) $revision->post_parent === $post_id ? $revision : null;
 	}
 }

@@ -30,18 +30,18 @@ import {
 	RedirectChain,
 	fixedText,
 } from './fix-dialogs';
-import {
-	ELEMENTS,
-	ORIGINS,
-	STATUSES,
-	answerOf,
-	formatDate,
-	labelOf,
-} from './labels';
+import { ELEMENTS, ORIGINS, STATUSES, formatDate, labelOf } from './labels';
 import { ALL_STATUSES, replaceArgs, statusesFromUrl } from './navigation';
+import Intro from './help';
 import { useNotify } from './notices';
+import { StatusCell, StatusHeader } from './status';
 
 const { postTypes = [] } = window.seekfixAdmin || {};
+
+const historyHint = __(
+	'You can also undo it later from the History tab.',
+	'seekfix'
+);
 
 const DEFAULT_VIEW = {
 	type: 'table',
@@ -150,30 +150,6 @@ function toQuery( view, byUrl ) {
 }
 
 /**
- * Status cell: label, last answer and certificate warning.
- *
- * @param {Object} props      Props.
- * @param {Object} props.item Row.
- * @return {Element} Element.
- */
-function StatusCell( { item } ) {
-	const status = item.ignored ? 'ignored' : item.status;
-	const answer = answerOf( item );
-
-	return (
-		<span className={ `seekfix-status is-${ status }` }>
-			{ labelOf( STATUSES, status ) }
-			{ answer && <span className="seekfix-muted"> · { answer }</span> }
-			{ item.ssl_invalid && (
-				<span className="seekfix-badge">
-					{ __( 'Invalid certificate', 'seekfix' ) }
-				</span>
-			) }
-		</span>
-	);
-}
-
-/**
  * Builds the DataViews fields.
  *
  * @param {boolean} byUrl Group by URL.
@@ -202,6 +178,7 @@ function buildFields( byUrl, hosts ) {
 		{
 			id: 'status',
 			label: __( 'Status', 'seekfix' ),
+			header: <StatusHeader />,
 			elements: STATUSES,
 			filterBy: { operators: [ 'isAny' ], isPrimary: true },
 			getValue: ( { item } ) =>
@@ -392,7 +369,7 @@ export default function LinksTab() {
 
 	const onFixed = useCallback(
 		( result ) => {
-			notify( fixedText( result ), {
+			notify( fixedText( result ) + ' ' + historyHint, {
 				actions:
 					result.actionIds.length > 0
 						? [
@@ -588,73 +565,89 @@ export default function LinksTab() {
 			.catch( ( error ) => notify( error.message, { status: 'error' } ) );
 
 	return (
-		<div
-			ref={ setTable }
-			className={ [ 'seekfix-links', primaryWidth.className ]
-				.filter( Boolean )
-				.join( ' ' ) }
-			style={ primaryWidth.style }
-		>
-			<ColumnResizers
-				container={ table }
-				columns={ [ view.titleField, ...view.fields ] }
-				labels={ labels }
-				widths={ columnWidths }
-			/>
-			<DataViews
-				view={ shownView }
-				onChangeView={ changeView }
-				fields={ fields }
-				data={ data.items }
-				getItemId={ ( item ) => String( item.id ) }
-				isLoading={ loading }
-				actions={ actions }
-				paginationInfo={ {
-					totalItems: data.total,
-					totalPages: data.pages,
-				} }
-				defaultLayouts={ { table: {} } }
-				search
-				searchLabel={ __( 'Search URL or link text', 'seekfix' ) }
-				header={
-					<Flex
-						gap={ 3 }
-						justify="flex-end"
-						className="seekfix-links__header"
-					>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={ __( 'Group by URL', 'seekfix' ) }
-							checked={ byUrl }
-							onChange={ toggleGroup }
-						/>
-						{ Object.keys( widths ).length > 0 && (
-							<Button
-								variant="tertiary"
-								size="compact"
-								onClick={ resetAll }
-							>
-								{ __( 'Reset column widths', 'seekfix' ) }
-							</Button>
-						) }
-						<Button
-							variant="secondary"
-							size="compact"
-							onClick={ exportCsv }
+		<>
+			<Intro>
+				<p>
+					{ __(
+						'Each row is a link in a post. Use the Status filter to see broken links, links that could not be verified, or redirects. Turn on Group by URL to fix every post that uses the same URL at once.',
+						'seekfix'
+					) }
+				</p>
+				<p className="seekfix-muted">
+					{ __(
+						'Use the actions of a row to fix it: remove the link and keep its text, replace the URL, or point a redirect straight to its final address. Every fix saves a revision first and is listed in the History tab, where you can undo it.',
+						'seekfix'
+					) }
+				</p>
+			</Intro>
+			<div
+				ref={ setTable }
+				className={ [ 'seekfix-links', primaryWidth.className ]
+					.filter( Boolean )
+					.join( ' ' ) }
+				style={ primaryWidth.style }
+			>
+				<ColumnResizers
+					container={ table }
+					columns={ [ view.titleField, ...view.fields ] }
+					labels={ labels }
+					widths={ columnWidths }
+				/>
+				<DataViews
+					view={ shownView }
+					onChangeView={ changeView }
+					fields={ fields }
+					data={ data.items }
+					getItemId={ ( item ) => String( item.id ) }
+					isLoading={ loading }
+					actions={ actions }
+					paginationInfo={ {
+						totalItems: data.total,
+						totalPages: data.pages,
+					} }
+					defaultLayouts={ { table: {} } }
+					search
+					searchLabel={ __( 'Search URL or link text', 'seekfix' ) }
+					header={
+						<Flex
+							gap={ 3 }
+							justify="flex-end"
+							className="seekfix-links__header"
 						>
-							{ __( 'Export CSV', 'seekfix' ) }
-						</Button>
-					</Flex>
-				}
-				empty={
-					<p>
-						{ __(
-							'No links match these filters. Pending URLs appear here once they are checked.',
-							'seekfix'
-						) }
-					</p>
-				}
-			/>
-		</div>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={ __( 'Group by URL', 'seekfix' ) }
+								checked={ byUrl }
+								onChange={ toggleGroup }
+							/>
+							{ Object.keys( widths ).length > 0 && (
+								<Button
+									variant="tertiary"
+									size="compact"
+									onClick={ resetAll }
+								>
+									{ __( 'Reset column widths', 'seekfix' ) }
+								</Button>
+							) }
+							<Button
+								variant="secondary"
+								size="compact"
+								onClick={ exportCsv }
+							>
+								{ __( 'Export CSV', 'seekfix' ) }
+							</Button>
+						</Flex>
+					}
+					empty={
+						<p>
+							{ __(
+								'No links match these filters. Pending URLs appear here once they are checked.',
+								'seekfix'
+							) }
+						</p>
+					}
+				/>
+			</div>
+		</>
 	);
 }

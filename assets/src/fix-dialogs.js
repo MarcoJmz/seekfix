@@ -60,7 +60,7 @@ export function RedirectChain( { item } ) {
 			) ) }
 			{ item.final_url && (
 				<li>
-					<code>200</code>{ ' ' }
+					<code>{ item.http_code || '' }</code>{ ' ' }
 					<span className="seekfix-break">{ item.final_url }</span>
 				</li>
 			) }

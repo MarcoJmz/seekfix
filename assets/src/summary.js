@@ -11,15 +11,15 @@ import {
 	CardBody,
 	Flex,
 	Notice,
-	ProgressBar,
 	Spinner,
 } from '@wordpress/components';
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Icon, chevronRight } from '@wordpress/icons';
 
 import { api } from './api';
-import { formatDate } from './labels';
+import Intro from './help';
+import { formatDate, toDate } from './labels';
 import { linksUrl } from './navigation';
 import { useNotify } from './notices';
 
@@ -33,19 +33,21 @@ const { cronDisabled = false } = window.seekfixAdmin || {};
  *
  * @param {Object}                   props        Props.
  * @param {string}                   props.label  Label.
+ * @param {string}                   props.help   What the count means.
  * @param {number}                   props.value  Value.
  * @param {string}                   props.tone   Extra class.
  * @param {string}                   props.status Status to filter the Links tab by.
  * @param {(status: string) => void} props.onOpen Opens the Links tab without reloading.
  * @return {Element} Element.
  */
-function Stat( { label, value, tone = '', status, onOpen } ) {
+function Stat( { label, help, value, tone = '', status, onOpen } ) {
 	const body = (
 		<>
+			<div className="seekfix-stat__label">{ label }</div>
 			<div className="seekfix-stat__value">
 				{ Number( value || 0 ).toLocaleString() }
 			</div>
-			<div className="seekfix-stat__label">{ label }</div>
+			{ help && <div className="seekfix-stat__help">{ help }</div> }
 		</>
 	);
 
@@ -94,33 +96,184 @@ function Stat( { label, value, tone = '', status, onOpen } ) {
 }
 
 /**
- * Progress line of a running or paused scan.
+ * Seconds since a date, updated every second while `live`.
  *
- * @param {Object} props      Props.
- * @param {Object} props.scan Progress from the API.
+ * @param {string|null} since RFC 3339 date.
+ * @param {boolean}     live  Whether to keep counting.
+ * @return {number|null} Seconds, or null without a date.
+ */
+function useElapsed( since, live ) {
+	const [ now, setNow ] = useState( () => Date.now() );
+
+	useEffect( () => {
+		if ( ! live ) {
+			return undefined;
+		}
+
+		const timer = window.setInterval( () => setNow( Date.now() ), 1000 );
+
+		return () => window.clearInterval( timer );
+	}, [ live ] );
+
+	if ( ! since ) {
+		return null;
+	}
+
+	return Math.max(
+		0,
+		Math.floor( ( now - toDate( since ).getTime() ) / 1000 )
+	);
+}
+
+/**
+ * "1 h 05 min", "4 min 20 s" or "12 s".
+ *
+ * @param {number} seconds Seconds.
+ * @return {string} Text.
+ */
+function formatDuration( seconds ) {
+	const hours = Math.floor( seconds / 3600 );
+	const minutes = Math.floor( ( seconds % 3600 ) / 60 );
+	const rest = seconds % 60;
+
+	if ( hours > 0 ) {
+		/* translators: 1: hours, 2: minutes. */
+		return sprintf( __( '%1$d h %2$02d min', 'seekfix' ), hours, minutes );
+	}
+
+	if ( minutes > 0 ) {
+		/* translators: 1: minutes, 2: seconds. */
+		return sprintf( __( '%1$d min %2$02d s', 'seekfix' ), minutes, rest );
+	}
+
+	/* translators: %d: seconds. */
+	return sprintf( __( '%d s', 'seekfix' ), rest );
+}
+
+/**
+ * Card of a running or paused scan: phase, a large bar and the time spent.
+ *
+ * Between two answers of the server the bar's stripes move and the timer
+ * counts, so the scan never looks stuck.
+ *
+ * @param {Object}  props         Props.
+ * @param {Object}  props.scan    Progress from the API.
+ * @param {boolean} props.working Whether a scan step is being sent.
  * @return {Element} Element.
  */
-function ScanProgress( { scan } ) {
+function ScanProgress( { scan, working } ) {
+	const running = scan.status === 'running';
 	const extracting = scan.phase === 'extract';
 	const done = extracting ? scan.posts_done : scan.urls_checked;
 	const total = extracting ? scan.posts_total : scan.urls_total;
-	const percent = total > 0 ? Math.min( 100, ( done / total ) * 100 ) : 0;
+	const known = total > 0;
+	const percent = known ? Math.min( 100, ( done / total ) * 100 ) : 0;
+	const elapsed = useElapsed( scan.started_at, running );
 
-	const text = extracting
-		? /* translators: 1: posts read, 2: total posts. */
-			__( 'Reading posts: %1$d of %2$d', 'seekfix' )
-		: /* translators: 1: URLs checked, 2: total URLs. */
-			__( 'Checking URLs: %1$d of %2$d', 'seekfix' );
+	const phase = extracting
+		? __( 'Step 1 of 2: reading your posts and pages', 'seekfix' )
+		: __( 'Step 2 of 2: checking each URL', 'seekfix' );
+
+	const count = extracting
+		? sprintf(
+				/* translators: 1: posts read, 2: total posts. */
+				_n(
+					'%1$s of %2$s post read',
+					'%1$s of %2$s posts read',
+					total,
+					'seekfix'
+				),
+				done.toLocaleString(),
+				total.toLocaleString()
+			)
+		: sprintf(
+				/* translators: 1: URLs checked, 2: total URLs. */
+				_n(
+					'%1$s of %2$s URL checked',
+					'%1$s of %2$s URLs checked',
+					total,
+					'seekfix'
+				),
+				done.toLocaleString(),
+				total.toLocaleString()
+			);
 
 	return (
-		<div className="seekfix-progress">
-			<ProgressBar value={ percent } />
-			<p>
-				{ sprintf( text, done, total ) }
-				{ scan.status === 'paused' &&
-					' — ' + __( 'Paused', 'seekfix' ) }
-			</p>
-		</div>
+		<Card
+			className={ `seekfix-progress ${
+				running ? 'is-running' : 'is-paused'
+			}` }
+		>
+			<CardBody>
+				<Flex justify="space-between" align="center">
+					<div className="seekfix-progress__title">
+						{ running && <Spinner /> }
+						<strong>
+							{ running
+								? __( 'Scan in progress', 'seekfix' )
+								: __( 'Scan paused', 'seekfix' ) }
+						</strong>
+					</div>
+					{ known && (
+						<span className="seekfix-progress__percent">
+							{ Math.floor( percent ) }%
+						</span>
+					) }
+				</Flex>
+
+				<p className="seekfix-progress__phase">{ phase }</p>
+
+				<div
+					className={
+						'seekfix-progress__track' +
+						( known ? '' : ' is-indeterminate' )
+					}
+					role="progressbar"
+					aria-label={ phase }
+					aria-valuemin={ 0 }
+					aria-valuemax={ 100 }
+					aria-valuenow={ known ? Math.floor( percent ) : undefined }
+				>
+					<div
+						className="seekfix-progress__fill"
+						style={ known ? { width: `${ percent }%` } : undefined }
+					/>
+				</div>
+
+				<Flex
+					justify="space-between"
+					wrap
+					className="seekfix-progress__meta"
+				>
+					<span aria-live="polite">
+						{ known
+							? count
+							: __( 'Counting what to scan…', 'seekfix' ) }
+					</span>
+					<span className="seekfix-muted">
+						{ running &&
+							working &&
+							__( 'Working…', 'seekfix' ) + ' · ' }
+						{ running &&
+							elapsed !== null &&
+							sprintf(
+								/* translators: %s: time since the scan started, like "4 min 20 s". */
+								__( 'Running for %s', 'seekfix' ),
+								formatDuration( elapsed )
+							) }
+					</span>
+				</Flex>
+
+				{ ! running && (
+					<p className="seekfix-muted">
+						{ __(
+							'Nothing is checked while the scan is paused. Resume it to continue where it stopped.',
+							'seekfix'
+						) }
+					</p>
+				) }
+			</CardBody>
+		</Card>
 	);
 }
 
@@ -128,6 +281,7 @@ export default function SummaryTab( { onOpenLinks } ) {
 	const notify = useNotify();
 	const [ summary, setSummary ] = useState( null );
 	const [ busy, setBusy ] = useState( false );
+	const [ working, setWorking ] = useState( false );
 	const stepping = useRef( false );
 
 	const load = useCallback(
@@ -152,12 +306,13 @@ export default function SummaryTab( { onOpenLinks } ) {
 			return undefined;
 		}
 
-		const timer = window.setInterval( () => {
+		const step = () => {
 			if ( stepping.current ) {
 				return;
 			}
 
 			stepping.current = true;
+			setWorking( true );
 
 			api.scan( 'step' )
 				.then( load )
@@ -166,8 +321,15 @@ export default function SummaryTab( { onOpenLinks } ) {
 				)
 				.finally( () => {
 					stepping.current = false;
+					setWorking( false );
 				} );
-		}, POLL_MS );
+		};
+
+		// The first step goes right away, so the numbers move as soon as
+		// the scan starts or the screen opens.
+		step();
+
+		const timer = window.setInterval( step, POLL_MS );
 
 		return () => window.clearInterval( timer );
 	}, [ running, load, notify ] );
@@ -192,6 +354,15 @@ export default function SummaryTab( { onOpenLinks } ) {
 
 	return (
 		<div className="seekfix-summary">
+			<Intro>
+				<p>
+					{ __(
+						'SeekFix reads your posts and pages, then checks every link, button and image in them. Broken links are listed in the Links tab, where you can fix them without opening each post.',
+						'seekfix'
+					) }
+				</p>
+			</Intro>
+
 			{ neverScanned && (
 				<Notice status="info" isDismissible={ false }>
 					{ __(
@@ -204,6 +375,10 @@ export default function SummaryTab( { onOpenLinks } ) {
 			<div className="seekfix-stats">
 				<Stat
 					label={ __( 'Broken', 'seekfix' ) }
+					help={ __(
+						'Not found or gone, confirmed by a second check.',
+						'seekfix'
+					) }
 					value={ counts.broken }
 					tone="is-broken"
 					status="broken"
@@ -211,24 +386,42 @@ export default function SummaryTab( { onOpenLinks } ) {
 				/>
 				<Stat
 					label={ __( 'Cannot verify', 'seekfix' ) }
+					help={ __(
+						'The site blocked the check or did not answer. Open them to check by hand.',
+						'seekfix'
+					) }
 					value={ counts.unverifiable }
 					status="unverifiable"
 					onOpen={ onOpenLinks }
 				/>
 				<Stat
 					label={ __( 'Redirects', 'seekfix' ) }
+					help={ __(
+						'They work, but go through another address first.',
+						'seekfix'
+					) }
 					value={ counts.redirect }
 					status="redirect"
 					onOpen={ onOpenLinks }
 				/>
-				<Stat label={ __( 'Checked', 'seekfix' ) } value={ checked } />
+				<Stat
+					label={ __( 'Checked', 'seekfix' ) }
+					help={ __( 'Different URLs checked so far.', 'seekfix' ) }
+					value={ checked }
+				/>
 				<Stat
 					label={ __( 'Waiting to be checked', 'seekfix' ) }
+					help={ __(
+						'Found in your content, not checked yet.',
+						'seekfix'
+					) }
 					value={ counts.pending }
 				/>
 			</div>
 
-			{ scan.status !== 'idle' && <ScanProgress scan={ scan } /> }
+			{ scan.status !== 'idle' && (
+				<ScanProgress scan={ scan } working={ working } />
+			) }
 
 			<Flex justify="flex-start" gap={ 2 } className="seekfix-controls">
 				{ scan.status === 'idle' && (

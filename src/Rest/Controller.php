@@ -9,6 +9,7 @@ namespace SeekFix\Rest;
 
 use SeekFix\Admin\AdminPage;
 use SeekFix\Checker;
+use SeekFix\Data\ActionRepository;
 use SeekFix\Data\LinkRepository;
 use SeekFix\Data\ReportQuery;
 use SeekFix\FixService;
@@ -128,6 +129,25 @@ class Controller {
 					'type'     => 'integer',
 					'minimum'  => 0,
 					'required' => true,
+				),
+			)
+		);
+		$this->route(
+			'/actions',
+			WP_REST_Server::READABLE,
+			'actions',
+			$admin,
+			array(
+				'page'     => array(
+					'type'    => 'integer',
+					'minimum' => 1,
+					'default' => 1,
+				),
+				'per_page' => array(
+					'type'    => 'integer',
+					'minimum' => 1,
+					'maximum' => 100,
+					'default' => 20,
 				),
 			)
 		);
@@ -338,6 +358,29 @@ class Controller {
 	}
 
 	/**
+	 * GET /actions: one page of the fix history, newest first.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function actions( WP_REST_Request $request ) {
+		$per_page = (int) $request['per_page'];
+		$result   = ( new ActionRepository() )->page( (int) $request['page'], $per_page );
+		$undo     = new UndoService();
+		$items    = array();
+
+		foreach ( $result['rows'] as $row ) {
+			$items[] = $this->format_action( $row, $undo );
+		}
+
+		$response = rest_ensure_response( $items );
+		$response->header( 'X-WP-Total', (string) $result['total'] );
+		$response->header( 'X-WP-TotalPages', (string) max( 1, (int) ceil( $result['total'] / $per_page ) ) );
+
+		return $response;
+	}
+
+	/**
 	 * POST /actions/{id}/undo.
 	 *
 	 * @param WP_REST_Request $request Request.
@@ -494,6 +537,36 @@ class Controller {
 				'view_url'        => get_permalink( (int) $row->post_id ),
 				'actions'         => $this->available( $actions, $item ),
 			)
+		);
+	}
+
+	/**
+	 * Formats a row of the fix history.
+	 *
+	 * @param object      $row  Row from ActionRepository::page().
+	 * @param UndoService $undo Tells whether it can be undone.
+	 * @return array<string, mixed>
+	 */
+	public function format_action( $row, UndoService $undo ) {
+		$post_id  = (int) $row->post_id;
+		$post     = get_post( $post_id );
+		$user     = get_userdata( (int) $row->user_id );
+		$state    = $undo->state( $row );
+		$revision = $row->revision_id && get_post( (int) $row->revision_id ) ? admin_url( 'revision.php?revision=' . (int) $row->revision_id ) : null;
+
+		return array(
+			'id'            => (int) $row->id,
+			'post_id'       => $post_id,
+			'post_title'    => $post && '' !== $post->post_title ? html_entity_decode( $post->post_title, ENT_QUOTES, 'UTF-8' ) : sprintf( '#%d', $post_id ),
+			'edit_url'      => $post ? get_edit_post_link( $post_id, 'raw' ) : null,
+			'action'        => (string) $row->action,
+			'old_url'       => (string) $row->old_url,
+			'new_url'       => $row->new_url,
+			'user'          => $user ? $user->display_name : '',
+			'created_at'    => mysql_to_rfc3339( $row->created_at ),
+			'undone_at'     => empty( $row->undone_at ) ? null : mysql_to_rfc3339( $row->undone_at ),
+			'state'         => $state,
+			'revisions_url' => $revision,
 		);
 	}
 

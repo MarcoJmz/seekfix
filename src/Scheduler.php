@@ -11,12 +11,14 @@ namespace SeekFix;
  * Starts a full scan on the schedule from the settings, and runs the steps
  * of any running scan in the background.
  *
- * Two cron hooks:
+ * Three cron hooks:
  * - SCAN_HOOK, recurring (daily or weekly), starts a scan when none is
  *   running or paused.
  * - STEP_HOOK, a single event, runs one step and queues the next one while
  *   the scan runs. The admin screen keeps asking for steps while it is open;
  *   the step lock keeps both from overlapping.
+ * - CLEANUP_HOOK, daily, deletes fix history older than the retention
+ *   period in the settings. Not scheduled when the history is kept forever.
  */
 class Scheduler {
 
@@ -29,6 +31,11 @@ class Scheduler {
 	 * Single event that runs one scan step.
 	 */
 	const STEP_HOOK = 'seekfix_scan_step';
+
+	/**
+	 * Daily event that deletes old fix history.
+	 */
+	const CLEANUP_HOOK = 'seekfix_cleanup_history';
 
 	/**
 	 * Seconds between background steps. WP-Cron runs at most about once a
@@ -70,6 +77,27 @@ class Scheduler {
 	public function register_hooks() {
 		add_action( self::SCAN_HOOK, array( $this, 'run_scheduled' ) );
 		add_action( self::STEP_HOOK, array( $this, 'run_step' ) );
+		add_action( self::CLEANUP_HOOK, array( $this, 'run_cleanup' ) );
+
+		// Sites that had the plugin active before the cleanup existed.
+		add_action( 'admin_init', array( self::class, 'sync_cleanup' ) );
+	}
+
+	/**
+	 * CLEANUP_HOOK: deletes fixes older than the retention period.
+	 *
+	 * Only SeekFix's records go; the posts' revisions stay in WordPress.
+	 *
+	 * @return int Rows deleted.
+	 */
+	public function run_cleanup() {
+		$days = Settings::history_days();
+
+		if ( $days <= 0 ) {
+			return 0;
+		}
+
+		return ( new Data\ActionRepository() )->delete_older_than( gmdate( 'Y-m-d H:i:s', time() - $days * DAY_IN_SECONDS ) );
 	}
 
 	/**
@@ -116,12 +144,14 @@ class Scheduler {
 	}
 
 	/**
-	 * Makes the recurring event match the schedule in the settings.
+	 * Makes the recurring events match the settings.
 	 *
 	 * Runs when the settings are saved and on activation. An event that
 	 * already has the right recurrence keeps its time.
 	 */
 	public static function sync() {
+		self::sync_cleanup();
+
 		$schedule = Settings::for_editing()['schedule'];
 		$event    = wp_get_scheduled_event( self::SCAN_HOOK );
 
@@ -139,11 +169,28 @@ class Scheduler {
 	}
 
 	/**
-	 * Removes both events. Runs on deactivation.
+	 * Schedules the daily cleanup while the history has a retention period,
+	 * and removes it when the history is kept forever.
+	 */
+	public static function sync_cleanup() {
+		$scheduled = (bool) wp_next_scheduled( self::CLEANUP_HOOK );
+
+		if ( Settings::history_days() > 0 ) {
+			if ( ! $scheduled ) {
+				wp_schedule_event( self::first_run(), 'daily', self::CLEANUP_HOOK );
+			}
+		} elseif ( $scheduled ) {
+			wp_clear_scheduled_hook( self::CLEANUP_HOOK );
+		}
+	}
+
+	/**
+	 * Removes every event. Runs on deactivation.
 	 */
 	public static function clear() {
 		wp_clear_scheduled_hook( self::SCAN_HOOK );
 		wp_clear_scheduled_hook( self::STEP_HOOK );
+		wp_clear_scheduled_hook( self::CLEANUP_HOOK );
 	}
 
 	/**

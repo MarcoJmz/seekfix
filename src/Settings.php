@@ -97,6 +97,25 @@ class Settings {
 	const SCHEDULES = array( 'off', 'daily', 'weekly' );
 
 	/**
+	 * Days the fix history can be kept; 0 keeps it forever.
+	 */
+	const HISTORY_DAYS = array( 30, 90, 180, 365, 0 );
+
+	/**
+	 * Default days of fix history.
+	 */
+	const DEFAULT_HISTORY_DAYS = 180;
+
+	/**
+	 * Days of fix history to keep; 0 keeps it forever.
+	 *
+	 * @return int
+	 */
+	public static function history_days() {
+		return self::for_editing()['history_days'];
+	}
+
+	/**
 	 * Settings as the admin screen edits them, with defaults filled in.
 	 *
 	 * `post_types` is null while the user has not picked any, meaning every
@@ -114,6 +133,7 @@ class Settings {
 			'schedule'         => isset( $settings['schedule'] ) && in_array( $settings['schedule'], self::SCHEDULES, true ) ? $settings['schedule'] : 'off',
 			'email_enabled'    => ! empty( $settings['email_enabled'] ),
 			'email_recipients' => isset( $settings['email_recipients'] ) ? array_values( (array) $settings['email_recipients'] ) : array(),
+			'history_days'     => isset( $settings['history_days'] ) && in_array( (int) $settings['history_days'], self::HISTORY_DAYS, true ) ? (int) $settings['history_days'] : self::DEFAULT_HISTORY_DAYS,
 			'host_rules'       => array(
 				HostRules::UNVERIFIABLE => isset( $rules[ HostRules::UNVERIFIABLE ] ) ? array_values( (array) $rules[ HostRules::UNVERIFIABLE ] ) : array(),
 				HostRules::EXCLUDE      => isset( $rules[ HostRules::EXCLUDE ] ) ? array_values( (array) $rules[ HostRules::EXCLUDE ] ) : array(),
@@ -137,6 +157,7 @@ class Settings {
 			'schedule'         => in_array( $settings['schedule'], self::SCHEDULES, true ) ? $settings['schedule'] : 'off',
 			'email_enabled'    => (bool) $settings['email_enabled'],
 			'email_recipients' => array_values( array_unique( array_filter( array_map( 'sanitize_email', (array) $settings['email_recipients'] ), 'is_email' ) ) ),
+			'history_days'     => in_array( (int) $settings['history_days'], self::HISTORY_DAYS, true ) ? (int) $settings['history_days'] : self::DEFAULT_HISTORY_DAYS,
 			'host_rules'       => array(),
 		);
 

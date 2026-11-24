@@ -19,6 +19,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 import { api } from './api';
+import Intro from './help';
 import { useNotify } from './notices';
 
 const { postTypes = [], adminEmail = '' } = window.seekfixAdmin || {};
@@ -79,6 +80,7 @@ export default function SettingsTab() {
 			schedule: settings.schedule,
 			email_enabled: settings.email_enabled,
 			email_recipients: typed,
+			history_days: settings.history_days,
 			host_rules: {
 				unverifiable: fromLines( unverifiable ),
 				exclude: fromLines( exclude ),
@@ -122,11 +124,26 @@ export default function SettingsTab() {
 
 	return (
 		<div className="seekfix-settings">
+			<Intro>
+				<p>
+					{ __(
+						'Choose what SeekFix scans, when it scans on its own and who gets an e-mail about new broken links. Changes apply from the next scan.',
+						'seekfix'
+					) }
+				</p>
+			</Intro>
+
 			<Card>
 				<CardHeader>
 					<h2>{ __( 'What to scan', 'seekfix' ) }</h2>
 				</CardHeader>
 				<CardBody>
+					<p className="seekfix-muted">
+						{ __(
+							'SeekFix checks the links, buttons and images in the content of these types. Menus, widgets, comments and custom fields are not scanned.',
+							'seekfix'
+						) }
+					</p>
 					<fieldset>
 						<legend>{ __( 'Content types', 'seekfix' ) }</legend>
 						{ postTypes.map( ( type ) => (
@@ -230,6 +247,52 @@ export default function SettingsTab() {
 							rows={ 3 }
 						/>
 					) }
+				</CardBody>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<h2>{ __( 'Fix history', 'seekfix' ) }</h2>
+				</CardHeader>
+				<CardBody>
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __(
+							'Keep fixes in the History tab',
+							'seekfix'
+						) }
+						help={ __(
+							'Older fixes are deleted once a day and can no longer be undone from SeekFix. The revisions WordPress saved before each fix stay with the post.',
+							'seekfix'
+						) }
+						value={ String( settings.history_days ) }
+						options={ [
+							{
+								value: '30',
+								label: __( 'For 30 days', 'seekfix' ),
+							},
+							{
+								value: '90',
+								label: __( 'For 90 days', 'seekfix' ),
+							},
+							{
+								value: '180',
+								label: __( 'For 180 days', 'seekfix' ),
+							},
+							{
+								value: '365',
+								label: __( 'For 1 year', 'seekfix' ),
+							},
+							{ value: '0', label: __( 'Forever', 'seekfix' ) },
+						] }
+						onChange={ ( value ) =>
+							setSettings( {
+								...settings,
+								history_days: Number( value ),
+							} )
+						}
+					/>
 				</CardBody>
 			</Card>
 

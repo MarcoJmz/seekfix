@@ -57,24 +57,35 @@ const call = ( promise ) =>
 		throw toError( error );
 	} );
 
+/**
+ * GET of a paged list: items plus the totals from the headers.
+ *
+ * @param {string} path  Path under the namespace.
+ * @param {Object} query Query arguments.
+ * @return {Promise<Object>} { items, total, pages }.
+ */
+const paged = ( path, query ) =>
+	call(
+		apiFetch( {
+			path: addQueryArgs( BASE + path, query ),
+			parse: false,
+		} )
+	)
+		.then( checked )
+		.then( async ( response ) => ( {
+			items: await response.json(),
+			total: Number( response.headers.get( 'X-WP-Total' ) || 0 ),
+			pages: Number( response.headers.get( 'X-WP-TotalPages' ) || 1 ),
+		} ) );
+
 export const api = {
 	summary: () => call( apiFetch( { path: BASE + '/summary' } ) ),
 
 	scan: ( action ) => call( post( '/scan', { action } ) ),
 
-	list: ( query ) =>
-		call(
-			apiFetch( {
-				path: addQueryArgs( BASE + '/instances', query ),
-				parse: false,
-			} )
-		)
-			.then( checked )
-			.then( async ( response ) => ( {
-				items: await response.json(),
-				total: Number( response.headers.get( 'X-WP-Total' ) || 0 ),
-				pages: Number( response.headers.get( 'X-WP-TotalPages' ) || 1 ),
-			} ) ),
+	list: ( query ) => paged( '/instances', query ),
+
+	history: ( query ) => paged( '/actions', query ),
 
 	hosts: () => call( apiFetch( { path: BASE + '/hosts' } ) ),
 

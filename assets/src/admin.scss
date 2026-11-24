@@ -18,19 +18,54 @@
 
 .seekfix-stats {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-	gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+	gap: 16px;
 	margin: 16px 0;
 }
 
+// Every card as tall as the row, with "View links" at the bottom: the Card's
+// content wrapper, the link and the body all stretch as flex columns.
+.seekfix-stat {
+	display: flex;
+	flex-direction: column;
+
+	> :first-child,
+	.seekfix-stat__link,
+	.components-card__body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+	}
+
+	.components-card__body {
+		padding: 16px 18px;
+	}
+}
+
+.seekfix-stat__label {
+	color: #1e1e1e;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.3;
+}
+
 .seekfix-stat__value {
-	font-size: 28px;
+	margin-top: 6px;
+	font-size: 32px;
 	font-weight: 600;
-	line-height: 1.2;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
 }
 
 .seekfix-stat.is-broken .seekfix-stat__value {
 	color: #b32d2e;
+}
+
+.seekfix-stat__help {
+	margin-top: 8px;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.45;
 }
 
 .seekfix-stat.is-link {
@@ -43,7 +78,6 @@
 }
 
 .seekfix-stat__link {
-	display: block;
 	height: 100%;
 	color: inherit;
 	text-decoration: none;
@@ -64,30 +98,146 @@
 	}
 }
 
+// Pushed to the bottom of the card, so the links line up across the row.
 .seekfix-stat__more {
 	display: flex;
 	align-items: center;
-	margin-top: 8px;
+	margin-top: auto;
+	padding-top: 12px;
 	color: var(--wp-admin-theme-color, #3858e9);
-	font-size: 12px;
+	font-size: 13px;
+	font-weight: 500;
 
 	svg {
 		fill: currentcolor;
 	}
 }
 
-.seekfix-stat__label,
 .seekfix-muted {
 	color: #646970;
 }
 
-.seekfix-progress {
-	max-width: 480px;
-	margin: 16px 0;
+.seekfix-intro {
+	max-width: 760px;
+	margin: 0 0 16px;
 
-	.components-progress-bar {
-		width: 100%;
+	p {
+		margin: 0 0 6px;
+		font-size: 13px;
 	}
+}
+
+.seekfix-progress {
+	max-width: 720px;
+	margin: 16px 0;
+	border-inline-start: 4px solid var(--wp-admin-theme-color, #3858e9);
+
+	&.is-paused {
+		border-inline-start-color: #dba617;
+	}
+
+	p {
+		margin: 4px 0;
+	}
+}
+
+.seekfix-progress__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 15px;
+
+	.components-spinner {
+		margin: 0;
+	}
+}
+
+.seekfix-progress__percent {
+	font-size: 22px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+.seekfix-progress__phase {
+	color: #50575e;
+}
+
+.seekfix-progress__track {
+	position: relative;
+	overflow: hidden;
+	height: 14px;
+	margin: 12px 0 8px;
+	border-radius: 7px;
+	background: #e0e0e0;
+}
+
+.seekfix-progress__fill {
+	min-width: 14px;
+	height: 100%;
+	border-radius: inherit;
+	background-color: var(--wp-admin-theme-color, #3858e9);
+	transition: width 0.6s ease;
+
+	.is-paused & {
+		background-color: #dba617;
+	}
+
+	// Moving stripes while the scan runs, so it never looks stuck between
+	// two updates.
+	.is-running & {
+		background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.25) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.25) 75%, transparent 75%, transparent);
+		background-size: 28px 28px;
+		animation: seekfix-stripes 1s linear infinite;
+	}
+
+	// Total not known yet: a block sliding back and forth.
+	.is-indeterminate & {
+		width: 30%;
+		animation: seekfix-slide 1.4s ease-in-out infinite;
+	}
+}
+
+.seekfix-progress__meta {
+	font-variant-numeric: tabular-nums;
+}
+
+@keyframes seekfix-stripes {
+
+	from {
+		background-position: 28px 0;
+	}
+
+	to {
+		background-position: 0 0;
+	}
+}
+
+@keyframes seekfix-slide {
+
+	0% {
+		transform: translateX(-100%);
+	}
+
+	100% {
+		transform: translateX(340%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.seekfix-progress__fill,
+	.seekfix-progress .seekfix-progress__fill {
+		transition: none;
+		animation: none;
+	}
+}
+
+.seekfix-state.is-available {
+	color: #00a32a;
+}
+
+.seekfix-history del {
+	color: #8a2424;
 }
 
 .seekfix-controls {
@@ -203,14 +353,131 @@
 	overflow-wrap: anywhere;
 }
 
-.seekfix-status.is-broken {
+.seekfix-status__label {
+	display: block;
+}
+
+.seekfix-status.is-broken .seekfix-status__label {
 	color: #b32d2e;
 	font-weight: 600;
 }
 
+// The path a link took: redirect codes, arrows, final answer.
+.seekfix-path {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+	margin-top: 4px;
+	border-radius: 2px;
+	cursor: help;
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-visible {
+		box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #3858e9);
+	}
+}
+
+.seekfix-path__hop {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.seekfix-path__arrow {
+	fill: #8c8f94;
+}
+
+.seekfix-step {
+	padding: 1px 6px;
+	border-radius: 2px;
+	background: #f0f0f1;
+	color: #50575e;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+
+	&.is-final {
+		background: #edfaef;
+		color: #1e4620;
+
+		.is-broken & {
+			background: #fcf0f1;
+			color: #8a2424;
+		}
+
+		.is-unverifiable & {
+			background: #fcf9e8;
+			color: #614a19;
+		}
+	}
+}
+
+.seekfix-step__name {
+	font-weight: 500;
+}
+
+// Status header: label plus an info icon with the tooltip.
+.seekfix-th-help {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.seekfix-th-help__bubble {
+	position: absolute;
+	z-index: 10;
+	top: calc(100% + 10px);
+	inset-inline-start: -8px;
+	width: 320px;
+	padding: 8px 10px;
+	border-radius: 2px;
+	background: #1e1e1e;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.5;
+	text-align: start;
+	text-transform: none;
+	letter-spacing: normal;
+	white-space: normal;
+	visibility: hidden;
+	opacity: 0;
+	transition: opacity 0.1s ease;
+	pointer-events: none;
+
+	strong {
+		font-weight: 600;
+	}
+
+	button:hover &,
+	button:focus-visible &,
+	.seekfix-th-help:hover > & {
+		visibility: visible;
+		opacity: 1;
+	}
+}
+
+.seekfix-th-help__icon {
+	display: inline-flex;
+	cursor: help;
+
+	svg {
+		fill: #8c8f94;
+	}
+
+	&:hover svg {
+		fill: var(--wp-admin-theme-color, #3858e9);
+	}
+}
+
 .seekfix-badge {
 	display: inline-block;
-	margin-left: 6px;
+	margin: 4px 0 0;
 	padding: 0 6px;
 	border-radius: 2px;
 	background: #fcf0f1;
@@ -267,4 +534,12 @@
 	bottom: 24px;
 	left: 184px;
 	z-index: 100000;
+}
+
+.seekfix-th-help__line {
+	display: block;
+
+	& + & {
+		margin-top: 4px;
+	}
 }

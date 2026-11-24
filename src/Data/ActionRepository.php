@@ -49,6 +49,40 @@ class ActionRepository {
 	}
 
 	/**
+	 * One page of the history, newest first.
+	 *
+	 * @param int $page     Page, from 1.
+	 * @param int $per_page Rows per page.
+	 * @return array{rows: object[], total: int} Rows without old_content, and the total.
+	 */
+	public function page( $page, $per_page ) {
+		global $wpdb;
+
+		$table    = Installer::table( 'actions' );
+		$per_page = max( 1, (int) $per_page );
+		$offset   = ( max( 1, (int) $page ) - 1 ) * $per_page;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT id, post_id, link_id, action, old_url, new_url, revision_id, old_content IS NOT NULL AS has_old_content, content_hash, user_id, created_at, undone_at
+				FROM %i ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d',
+				$table,
+				$per_page,
+				$offset
+			)
+		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
+		$total = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', $table ) );
+
+		return array(
+			'rows'  => is_array( $rows ) ? $rows : array(),
+			'total' => $total,
+		);
+	}
+
+	/**
 	 * Marks a fix as undone.
 	 *
 	 * Only a fix that is not undone yet changes, so two undo requests at the

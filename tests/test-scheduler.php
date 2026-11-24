@@ -6,6 +6,7 @@
  */
 
 use SeekFix\Checker;
+use SeekFix\Data\ActionRepository;
 use SeekFix\Data\LinkRepository;
 use SeekFix\HostRules;
 use SeekFix\Installer;
@@ -128,6 +129,55 @@ class SchedulerTest extends WP_UnitTestCase {
 
 		$this->assertFalse( wp_next_scheduled( Scheduler::SCAN_HOOK ) );
 		$this->assertFalse( wp_next_scheduled( Scheduler::STEP_HOOK ) );
+		$this->assertFalse( wp_next_scheduled( Scheduler::CLEANUP_HOOK ) );
+	}
+
+	/**
+	 * The history keeps 180 days by default; an unknown value falls back to it;
+	 * keeping it forever removes the cleanup event.
+	 */
+	public function test_history_retention_setting() {
+		$this->assertSame( 180, Settings::history_days() );
+
+		Settings::update( array( 'history_days' => 30 ) );
+		$this->assertSame( 30, Settings::history_days() );
+		$this->assertSame( 'daily', wp_get_scheduled_event( Scheduler::CLEANUP_HOOK )->schedule );
+
+		Settings::update( array( 'history_days' => 7 ) );
+		$this->assertSame( 180, Settings::history_days() );
+
+		Settings::update( array( 'history_days' => 0 ) );
+		$this->assertSame( 0, Settings::history_days() );
+		$this->assertFalse( wp_next_scheduled( Scheduler::CLEANUP_HOOK ) );
+	}
+
+	/**
+	 * The cleanup deletes fixes older than the period, and nothing when the
+	 * history is kept forever.
+	 */
+	public function test_cleanup_deletes_old_history() {
+		global $wpdb;
+
+		$actions = new ActionRepository();
+		$row     = array(
+			'post_id' => 1,
+			'action'  => 'unlink',
+			'old_url' => 'https://example.test/a',
+			'user_id' => 1,
+		);
+		$old     = $actions->insert( $row );
+		$recent  = $actions->insert( $row );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Test setup on the custom table.
+		$wpdb->update( Installer::table( 'actions' ), array( 'created_at' => gmdate( 'Y-m-d H:i:s', time() - 40 * DAY_IN_SECONDS ) ), array( 'id' => $old ) );
+
+		Settings::update( array( 'history_days' => 0 ) );
+		$this->assertSame( 0, $this->scheduler()->run_cleanup() );
+
+		Settings::update( array( 'history_days' => 30 ) );
+		$this->assertSame( 1, $this->scheduler()->run_cleanup() );
+		$this->assertNull( $actions->get( $old ) );
+		$this->assertNotNull( $actions->get( $recent ) );
 	}
 
 	/**

@@ -66,6 +66,18 @@ export function answerOf( item ) {
 }
 
 /**
+ * Date from the API. The server sends UTC dates through
+ * mysql_to_rfc3339(), which leaves out the offset, and JavaScript would
+ * read those as local time.
+ *
+ * @param {string} date RFC 3339 date, with or without an offset.
+ * @return {Date} Date.
+ */
+export function toDate( date ) {
+	return new Date( /(Z|[+-]\d\d:?\d\d)$/i.test( date ) ? date : date + 'Z' );
+}
+
+/**
  * Local date and time of an RFC 3339 date.
  *
  * @param {string|null} date Date.
@@ -73,7 +85,7 @@ export function answerOf( item ) {
  */
 export function formatDate( date ) {
 	return date
-		? new Date( date ).toLocaleString( undefined, {
+		? toDate( date ).toLocaleString( undefined, {
 				dateStyle: 'medium',
 				timeStyle: 'short',
 			} )

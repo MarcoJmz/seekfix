@@ -1,5 +1,5 @@
 /**
- * The screen: Summary, Links and Settings tabs.
+ * The screen: Summary, Links, History and Settings tabs.
  */
 import { TabPanel } from '@wordpress/components';
 import { useCallback, useState } from '@wordpress/element';
@@ -9,11 +9,13 @@ import { replaceArgs } from './navigation';
 import { NoticesProvider } from './notices';
 import SummaryTab from './summary';
 import LinksTab from './links';
+import HistoryTab from './history';
 import SettingsTab from './settings';
 
 const TABS = [
 	{ name: 'summary', title: __( 'Summary', 'seekfix' ) },
 	{ name: 'links', title: __( 'Links', 'seekfix' ) },
+	{ name: 'history', title: __( 'History', 'seekfix' ) },
 	{ name: 'settings', title: __( 'Settings', 'seekfix' ) },
 ];
 
@@ -61,6 +63,7 @@ export default function App() {
 							<SummaryTab onOpenLinks={ openLinks } />
 						) }
 						{ tab.name === 'links' && <LinksTab /> }
+						{ tab.name === 'history' && <HistoryTab /> }
 						{ tab.name === 'settings' && <SettingsTab /> }
 					</div>
 				) }

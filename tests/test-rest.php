@@ -213,6 +213,55 @@ class RestTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The history lists fixes newest first and tells which can still be undone.
+	 */
+	public function test_history() {
+		$first  = $this->post( '<p><a href="https://example.test/h1">A</a></p>', array( 'https://example.test/h1' => 'broken' ) );
+		$second = $this->post( '<p><a href="https://example.test/h2">B</a></p>', array( 'https://example.test/h2' => 'broken' ) );
+		$ids    = array();
+
+		foreach ( $this->request( 'GET', '/instances' )->get_data() as $item ) {
+			$ids[ $item['post_id'] ] = $this->request( 'POST', '/instances/' . $item['id'] . '/fix', array( 'action' => 'unlink' ) )->get_data()['action_id'];
+		}
+
+		$this->assertSame( 200, $this->request( 'POST', '/actions/' . $ids[ $first ] . '/undo' )->get_status() );
+
+		wp_update_post(
+			array(
+				'ID'           => $second,
+				'post_content' => '<p>Edited by hand</p>',
+			)
+		);
+
+		$response = $this->request( 'GET', '/actions', array( 'per_page' => 1 ) );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( '2', $response->get_headers()['X-WP-Total'] );
+		$this->assertSame( '2', $response->get_headers()['X-WP-TotalPages'] );
+		$this->assertCount( 1, $response->get_data() );
+
+		$states = array();
+
+		foreach ( $this->request( 'GET', '/actions' )->get_data() as $row ) {
+			$states[ $row['post_id'] ] = $row['state'];
+			$this->assertSame( 'unlink', $row['action'] );
+			$this->assertNotEmpty( $row['created_at'] );
+		}
+
+		$this->assertSame(
+			array(
+				$second => 'edited',
+				$first  => 'undone',
+			),
+			$states,
+			'Newest first.'
+		);
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		$this->assertSame( 403, $this->request( 'GET', '/actions' )->get_status() );
+	}
+
+	/**
 	 * Errors keep their HTTP status and code.
 	 */
 	public function test_fix_errors() {
