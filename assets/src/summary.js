@@ -136,18 +136,33 @@ function formatDuration( seconds ) {
 	const minutes = Math.floor( ( seconds % 3600 ) / 60 );
 	const rest = seconds % 60;
 
+	/*
+	 * The translator comments sit inside sprintf() so the minifier keeps
+	 * them next to __() when it folds these returns into one expression.
+	 */
 	if ( hours > 0 ) {
-		/* translators: 1: hours, 2: minutes. */
-		return sprintf( __( '%1$d h %2$02d min', 'seekfix' ), hours, minutes );
+		return sprintf(
+			/* translators: 1: hours, 2: minutes. */
+			__( '%1$d h %2$02d min', 'seekfix' ),
+			hours,
+			minutes
+		);
 	}
 
 	if ( minutes > 0 ) {
-		/* translators: 1: minutes, 2: seconds. */
-		return sprintf( __( '%1$d min %2$02d s', 'seekfix' ), minutes, rest );
+		return sprintf(
+			/* translators: 1: minutes, 2: seconds. */
+			__( '%1$d min %2$02d s', 'seekfix' ),
+			minutes,
+			rest
+		);
 	}
 
-	/* translators: %d: seconds. */
-	return sprintf( __( '%d s', 'seekfix' ), rest );
+	return sprintf(
+		/* translators: %d: seconds. */
+		__( '%d s', 'seekfix' ),
+		rest
+	);
 }
 
 /**

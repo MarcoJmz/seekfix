@@ -46,8 +46,12 @@ function describe( code ) {
 		return String( code );
 	}
 
-	/* translators: 1: HTTP code, 2: its meaning, like "Not found". */
-	return sprintf( __( '%1$s (%2$s)', 'seekfix' ), code, name );
+	return sprintf(
+		/* translators: 1: HTTP code, 2: its meaning, like "Not found". */
+		__( '%1$s (%2$s)', 'seekfix' ),
+		code,
+		name
+	);
 }
 
 /**
