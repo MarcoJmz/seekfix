@@ -166,6 +166,57 @@ class RestTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The host, internal or external, and content type filters; an empty value turns a filter off.
+	 */
+	public function test_instances_host_internal_and_type_filters() {
+		$this->post(
+			'<p><a href="https://example.test/a">A</a> <a href="https://other.test/b">B</a> <a href="/interna">C</a></p>',
+			array(
+				'https://example.test/a'                  => 'broken',
+				'https://other.test/b'                    => 'broken',
+				trailingslashit( home_url() ) . 'interna' => 'broken',
+			)
+		);
+		$page_id = self::factory()->post->create(
+			array(
+				'post_type'    => 'page',
+				'post_content' => '<p><a href="https://other.test/page">P</a></p>',
+			)
+		);
+		$this->links->save_check(
+			(int) $this->links->get_by_url( 'https://other.test/page' )->id,
+			array(
+				'status'          => 'broken',
+				'last_checked_at' => current_time( 'mysql', true ),
+				'next_check_at'   => gmdate( 'Y-m-d H:i:s', time() + DAY_IN_SECONDS ),
+			)
+		);
+
+		$urls = function ( array $params ) {
+			$urls = wp_list_pluck( $this->request( 'GET', '/instances', $params )->get_data(), 'url' );
+			sort( $urls );
+			return $urls;
+		};
+
+		$this->assertCount( 4, $urls( array( 'host' => '' ) ), 'An empty host does not filter.' );
+		$this->assertSame( array( 'https://other.test/b', 'https://other.test/page' ), $urls( array( 'host' => 'OTHER.test' ) ) );
+		$this->assertSame( array( trailingslashit( home_url() ) . 'interna' ), $urls( array( 'internal' => 'internal' ) ) );
+		$this->assertCount( 3, $urls( array( 'internal' => 'external' ) ) );
+		$this->assertSame( array( 'https://other.test/page' ), $urls( array( 'post_type' => array( 'page' ) ) ) );
+		$this->assertSame(
+			array( 'https://other.test/page' ),
+			$urls(
+				array(
+					'host'      => 'other.test',
+					'post_type' => array( 'page' ),
+					'search'    => 'page',
+				)
+			)
+		);
+		$this->assertSame( $page_id, $this->request( 'GET', '/instances', array( 'post_type' => array( 'page' ) ) )->get_data()[0]['post_id'] );
+	}
+
+	/**
 	 * Grouped by URL: one row per URL with post and link counts.
 	 */
 	public function test_group_by_url() {
@@ -179,6 +230,32 @@ class RestTest extends WP_UnitTestCase {
 		$this->assertSame( 2, $rows[0]['posts'] );
 		$this->assertSame( 3, $rows[0]['instances'] );
 		$this->assertSame( array( 'link' ), $rows[0]['elements'] );
+	}
+
+	/**
+	 * Grouped by URL, rows sort by the number of posts, both ways.
+	 */
+	public function test_group_by_url_sorts_by_posts() {
+		$this->post(
+			'<p><a href="https://example.test/x">1</a> <a href="https://example.test/y">2</a></p>',
+			array(
+				'https://example.test/x' => 'broken',
+				'https://example.test/y' => 'broken',
+			)
+		);
+		$this->post( '<p><a href="https://example.test/x">3</a></p>' );
+
+		$sorted = function ( $order ) {
+			$params = array(
+				'group_by_url' => true,
+				'orderby'      => 'posts',
+				'order'        => $order,
+			);
+			return wp_list_pluck( $this->request( 'GET', '/instances', $params )->get_data(), 'url' );
+		};
+
+		$this->assertSame( array( 'https://example.test/x', 'https://example.test/y' ), $sorted( 'desc' ) );
+		$this->assertSame( array( 'https://example.test/y', 'https://example.test/x' ), $sorted( 'asc' ) );
 	}
 
 	/**

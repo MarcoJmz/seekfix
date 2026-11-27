@@ -34,30 +34,25 @@ class InstanceRepository {
 		$table = Installer::table( 'instances' );
 
 		foreach ( array_chunk( $instances, self::INSERT_CHUNK ) as $chunk ) {
-			$placeholders = array();
-			$values       = array( $table );
+			$values = array( $table );
 
 			foreach ( $chunk as $row ) {
-				$placeholders[] = '(%d, %d, %s, ' . ( null === $row['shortcode_tag'] ? 'NULL' : '%s' ) . ', %s, %s, %d, %s)';
-				$values[]       = (int) $row['link_id'];
-				$values[]       = (int) $post_id;
-				$values[]       = $row['element'];
-
-				if ( null !== $row['shortcode_tag'] ) {
-					$values[] = substr( $row['shortcode_tag'], 0, 64 );
-				}
-
+				$values[] = (int) $row['link_id'];
+				$values[] = (int) $post_id;
+				$values[] = $row['element'];
+				// NULLIF() stores NULL for elements that are not in a shortcode; prepare() cannot pass NULL.
+				$values[] = null === $row['shortcode_tag'] ? '' : substr( $row['shortcode_tag'], 0, 64 );
 				$values[] = $row['anchor_text'];
 				$values[] = $row['raw_href'];
 				$values[] = min( 65535, (int) $row['occurrence'] );
 				$values[] = $row['content_hash'];
 			}
 
-			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- Placeholders are built above, one group per row.
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- One group of placeholders per row; $values holds them all.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Custom table.
 			$wpdb->query(
 				$wpdb->prepare(
-					'INSERT INTO %i (link_id, post_id, element, shortcode_tag, anchor_text, raw_href, occurrence, content_hash) VALUES ' . implode( ', ', $placeholders ),
+					'INSERT INTO %i (link_id, post_id, element, shortcode_tag, anchor_text, raw_href, occurrence, content_hash) VALUES ' . implode( ', ', array_fill( 0, count( $chunk ), "(%d, %d, %s, NULLIF(%s, ''), %s, %s, %d, %s)" ) ),
 					$values
 				)
 			);

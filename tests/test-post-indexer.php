@@ -100,6 +100,23 @@ class PostIndexerTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A link in a shortcode stores the shortcode's tag; any other element stores NULL.
+	 */
+	public function test_shortcode_tag_is_null_outside_shortcodes() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_content' => '<p><a href="https://example.test/a">A</a></p>[et_pb_button button_url="https://example.test/precios" button_text="Ver precios"][/et_pb_button]',
+			)
+		);
+
+		$rows = $this->instances->for_post( $post_id );
+
+		$this->assertSame( array( 'link', 'shortcode' ), wp_list_pluck( $rows, 'element' ) );
+		$this->assertNull( $rows[0]->shortcode_tag );
+		$this->assertSame( 'et_pb_button', $rows[1]->shortcode_tag );
+	}
+
+	/**
 	 * One URL row per unique URL, shared by posts; its status survives re-indexing.
 	 */
 	public function test_links_are_shared_and_status_is_kept() {
