@@ -1,5 +1,5 @@
 === SeekFix – Broken Link Checker & Fixer ===
-Contributors: marcojmz
+Contributors: marcmenez
 Tags: broken links, link checker, redirects, 404, seo
 Requires at least: 6.4
 Tested up to: 7.1
