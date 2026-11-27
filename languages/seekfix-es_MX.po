@@ -1,5 +1,3 @@
-# Copyright (C) 2026 MarcoJmz
-# This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
 "Project-Id-Version: SeekFix – Broken Link Checker & Fixer 0.1.0\n"
@@ -11,9 +9,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-11-27T06:49:07+01:00\n"
 "PO-Revision-Date: 2026-11-27 05:53+0000\n"
+"Language: es_MX\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: seekfix\n"
-"Language: es_MX\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Plugin Name of the plugin
@@ -23,8 +21,8 @@ msgstr "SeekFix – Revisa y corrige enlaces rotos"
 
 #. Plugin URI of the plugin
 #: seekfix.php
-msgid "https://seekfix.app"
-msgstr "https://seekfix.app"
+msgid "https://github.com/MarcoJmz/seekfix"
+msgstr "https://github.com/MarcoJmz/seekfix"
 
 #. Description of the plugin
 #: seekfix.php

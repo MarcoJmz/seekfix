@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       SeekFix – Broken Link Checker & Fixer
- * Plugin URI:        https://seekfix.app
+ * Plugin URI:        https://github.com/MarcoJmz/seekfix
  * Description:       Finds and fixes broken links without leaving WordPress. Every fix can be undone.
  * Author:            MarcoJmz
  * Author URI:        https://github.com/MarcoJmz

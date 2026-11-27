@@ -430,7 +430,7 @@ class Checker {
 	 * @return string
 	 */
 	public static function user_agent() {
-		return self::browser_user_agent() . ' SeekFix/' . ( defined( 'SEEKFIX_VERSION' ) ? SEEKFIX_VERSION : '0' ) . ' (+https://seekfix.app)';
+		return self::browser_user_agent() . ' SeekFix/' . ( defined( 'SEEKFIX_VERSION' ) ? SEEKFIX_VERSION : '0' ) . ' (+https://github.com/MarcoJmz/seekfix)';
 	}
 
 	/**
