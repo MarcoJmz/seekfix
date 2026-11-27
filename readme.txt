@@ -1,115 +1,105 @@
-=== Seekfix ===
-Contributors: (this should be a list of wordpress.org userid's)
-Donate link: https://example.com/
-Tags: comments, spam
+=== SeekFix – Broken Link Checker & Fixer ===
+Contributors: marcojmz
+Tags: broken links, link checker, redirects, 404, seo
 Requires at least: 6.4
-Tested up to: 7.1.5
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
+Finds and fixes broken links without leaving WordPress. Every fix can be undone.
 
 == Description ==
 
-This is the long description.  No limit, and you can use Markdown (as well as in the following sections).
+SeekFix finds the broken links in your posts and pages and lets you fix them from one screen, without opening each post. Every fix changes only the link, saves a revision first and can be undone.
 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+= How a scan works =
 
-A few notes about the sections above:
+1. SeekFix reads your content and collects every link, button and image.
+2. It checks each different URL once, from your server.
+3. A link that fails is checked again later before it is marked as broken, so a site that is down for a moment is not reported.
 
-*   "Contributors" is a comma separated list of wp.org/wp-plugins.org usernames
-*   "Tags" is a comma separated list of tags that apply to the plugin
-*   "Requires at least" is the lowest version that the plugin will work on
-*   "Tested up to" is the highest version that you've *successfully used to test the plugin*. Note that it might work on
-higher versions... this is just the highest one you've verified.
-*   Stable tag should indicate the Subversion "tag" of the latest stable version, or "trunk," if you use `/trunk/` for
-stable.
+Results are sorted into **Broken**, **Cannot verify** (the other site blocked the check or did not answer) and **Redirects**. The status of each link shows the path it took, such as `301 → 200`.
 
-    Note that the `readme.txt` of the stable tag is the one that is considered the defining one for the plugin, so
-if the `/trunk/readme.txt` file says that the stable tag is `4.3`, then it is `/tags/4.3/readme.txt` that'll be used
-for displaying information about the plugin.  In this situation, the only thing considered from the trunk `readme.txt`
-is the stable tag pointer.  Thus, if you develop in trunk, you can update the trunk `readme.txt` to reflect changes in
-your in-development version, without having that information incorrectly disclosed about the current stable version
-that lacks those changes -- as long as the trunk's `readme.txt` points to the correct stable tag.
+= Fix links from one screen =
 
-    If no stable tag is provided, it is assumed that trunk is stable, but you should specify "trunk" if that's where
-you put the stable version, in order to eliminate any doubt.
+* **Remove link**: the link goes and its text stays in place.
+* **Remove button**: removes a button block, and its group if it was the only button.
+* **Replace URL**: changes only the address.
+* **Update to final URL**: points a redirect straight to where it ends.
+* **Group by URL**: fix the same URL in every post at once.
+* **Ignore** a link, or **Check again now**.
+
+Filter by status, content type, domain, or internal and external links, search by URL or link text, and export the list as CSV.
+
+= Every fix can be undone =
+
+* Before each fix the post gets a revision.
+* The History tab lists every fix: when, by whom, in which post and what changed.
+* Undo puts the post back as it was, as long as nobody edited it afterwards. If someone did, Compare revisions opens the WordPress revisions screen so you can restore it by hand without losing their changes.
+
+= Automatic scans and e-mail =
+
+* Scan every day or every week in the background with WP-Cron.
+* Get one e-mail per scan when new broken links are found.
+* Choose how long the fix history is kept.
+
+= Works with your content =
+
+* Links, buttons and images in the block editor and the classic editor.
+* Links inside WPBakery and Divi shortcodes are found and listed. They are fixed in the page builder's editor.
+* Domain rules: mark sites that block automated checks as "cannot verify", or never check some domains.
+
+= WP-CLI =
+
+`wp seekfix index`, `wp seekfix check`, `wp seekfix status`, `wp seekfix fix`, `wp seekfix undo` and more. Run `wp help seekfix` for the full list.
+
+== Privacy ==
+
+SeekFix does not collect data and does not use an external service.
+
+To check a link, your server sends a request to the URL of that link, the same as a visitor opening it. The request identifies itself as SeekFix in its User-Agent and does not include information about your site or its users. Addresses on private or local networks are not checked, except your own site.
+
+Scan results and the history of fixes are stored in your database. Deleting the plugin removes them; your posts and their revisions are not changed.
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
-
-e.g.
-
-1. Upload `plugin-name.php` to the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
+1. In your admin, go to Plugins > Add New, search for "SeekFix" and click Install Now. Or upload the `seekfix` folder to `/wp-content/plugins/`.
+2. Activate the plugin.
+3. Go to Tools > Broken Links and click Start scan.
 
 == Frequently Asked Questions ==
 
-= A question that someone might have =
+= Who can use SeekFix? =
 
-An answer to that question.
+Users who can manage options, usually administrators.
 
-= What about foo bar? =
+= What does "Cannot verify" mean? =
 
-Answer to foo bar dilemma.
+The other site blocked the check or did not answer. Many large sites do this with automated requests. These links may work in a browser: open them to check by hand. You can add those domains to the "Always cannot verify" rule in Settings.
 
-== Screenshots ==
+= Does SeekFix slow down my site? =
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+Checks run in small batches, at most four requests at a time and one per site per second. While the Broken Links screen is open, the scan runs from there; otherwise it continues in the background with WP-Cron.
+
+= My site has WP-Cron turned off. =
+
+Keep the Summary tab open while a scan runs, or set up a server cron job that runs WP-Cron.
+
+= What is scanned? =
+
+The content of the post types you choose in Settings: every public post type except media by default. Drafts are optional. Menus, widgets, comments and custom fields are not scanned.
+
+= Can a fix break my post? =
+
+A fix changes only the bytes of the link. If saving the post would change anything else, for example because a plugin filters post content on save, SeekFix does not save it and asks you to fix the link in the editor.
+
+== Development ==
+
+The source code, including the unminified JavaScript of the admin screen, is at [github.com/MarcoJmz/seekfix](https://github.com/MarcoJmz/seekfix). Run `npm install` and `npm run build` to build `assets/build/` from `assets/src/`.
 
 == Changelog ==
 
-= 1.0 =
-* A change since the previous version.
-* Another change.
-
-= 0.5 =
-* List versions from most recent at top to oldest at bottom.
-
-== Upgrade Notice ==
-
-= 1.0 =
-Upgrade notices describe the reason a user should upgrade.  No more than 300 characters.
-
-= 0.5 =
-This version fixes a security related bug.  Upgrade immediately.
-
-== Arbitrary section ==
-
-You may provide arbitrary sections, in the same format as the ones above.  This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation."  Arbitrary sections will be shown below the built-in sections outlined above.
-
-== A brief Markdown Example ==
-
-Ordered list:
-
-1. Some feature
-1. Another feature
-1. Something else about the plugin
-
-Unordered list:
-
-* something
-* something else
-* third thing
-
-Here's a link to [WordPress](https://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax].
-Titles are optional, naturally.
-
-[markdown syntax]: https://daringfireball.net/projects/markdown/syntax
-            "Markdown is what the parser uses to process much of the readme file"
-
-Markdown uses email style notation for blockquotes and I've been told:
-> Asterisks for *emphasis*. Double it up  for **strong**.
-
-`<?php code(); // goes in backticks ?>`
+= 0.1.0 =
+* First release.
