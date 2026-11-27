@@ -14,7 +14,8 @@
     "composer": "wp-env run tests-cli --env-cwd=wp-content/plugins/seekfix composer",
     "test:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/seekfix vendor/bin/phpunit",
     "test:php:multisite": "wp-env run tests-cli --env-cwd=wp-content/plugins/seekfix env WP_MULTISITE=1 vendor/bin/phpunit",
-    "lint:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/seekfix vendor/bin/phpcs"
+    "lint:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/seekfix vendor/bin/phpcs",
+    "i18n:pot": "wp-env run cli --env-cwd=wp-content/plugins/seekfix wp i18n make-pot . languages/seekfix.pot --slug=seekfix --domain=seekfix --exclude=node_modules,vendor,tests,assets/src,.corpus"
   },
   "devDependencies": {
     "@wordpress/api-fetch": "8.2.0",

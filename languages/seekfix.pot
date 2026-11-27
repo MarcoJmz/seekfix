@@ -1,0 +1,1124 @@
+# Copyright (C) 2026 MarcoJmz
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: SeekFix – Broken Link Checker & Fixer 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/seekfix\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-27T06:49:07+01:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: seekfix\n"
+
+#. Plugin Name of the plugin
+#: seekfix.php
+msgid "SeekFix – Broken Link Checker & Fixer"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: seekfix.php
+msgid "https://seekfix.app"
+msgstr ""
+
+#. Description of the plugin
+#: seekfix.php
+msgid "Finds and fixes broken links without leaving WordPress. Every fix can be undone."
+msgstr ""
+
+#. Author of the plugin
+#: seekfix.php
+msgid "MarcoJmz"
+msgstr ""
+
+#. Author URI of the plugin
+#: seekfix.php
+msgid "https://github.com/MarcoJmz"
+msgstr ""
+
+#: src/Admin/AdminPage.php:56
+#: src/Admin/AdminPage.php:69
+#: src/Admin/AdminPage.php:147
+#: src/Admin/AdminPage.php:191
+msgid "Broken Links"
+msgstr ""
+
+#. translators: %s: number of broken links.
+#: src/Admin/AdminPage.php:64
+msgid "%s broken link"
+msgid_plural "%s broken links"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/AdminPage.php:93
+msgid "Overview"
+msgstr ""
+
+#: src/Admin/AdminPage.php:95
+msgid "SeekFix finds broken links in your content and lets you fix them from one screen. A scan has two steps: it reads your posts and pages to collect every link, button and image, then checks each different URL once."
+msgstr ""
+
+#: src/Admin/AdminPage.php:96
+msgid "The checks run on your server. Nothing is sent to an external service. A link that fails is checked again later before it is marked as broken, so a site that is down for a moment is not reported."
+msgstr ""
+
+#: src/Admin/AdminPage.php:100
+#: assets/build/admin.js:27
+msgid "Summary"
+msgstr ""
+
+#: src/Admin/AdminPage.php:102
+msgid "Shows how many URLs are broken, cannot be verified or redirect, and the progress of the current scan. Click a count to see those links in the Links tab."
+msgstr ""
+
+#: src/Admin/AdminPage.php:103
+msgid "Start scan reads all the selected content. Pause stops the scan and Resume continues it where it stopped; Cancel ends it and keeps the results found so far."
+msgstr ""
+
+#: src/Admin/AdminPage.php:104
+msgid "\"Cannot verify\" means the other site blocked the check or did not answer, which many large sites do with automated requests. These links may work in a browser: open them to check by hand."
+msgstr ""
+
+#: src/Admin/AdminPage.php:108
+#: assets/build/admin.js:26
+#: assets/build/admin.js:27
+msgid "Links"
+msgstr ""
+
+#: src/Admin/AdminPage.php:110
+msgid "Lists each link with its status, the post it is in and its text. Filter by status, content type, domain or internal and external links, search by URL or link text, and export the list as CSV."
+msgstr ""
+
+#: src/Admin/AdminPage.php:111
+msgid "Fixes: Remove link keeps the text and removes the link; Remove button removes a button block; Replace URL changes the address; Update to final URL points a redirect straight to where it ends. Group by URL fixes the same URL in every post at once."
+msgstr ""
+
+#: src/Admin/AdminPage.php:112
+msgid "Before each fix the post gets a revision. Ignore hides a link you do not want to fix; Check again now checks it right away."
+msgstr ""
+
+#: src/Admin/AdminPage.php:116
+#: assets/build/admin.js:27
+msgid "History"
+msgstr ""
+
+#: src/Admin/AdminPage.php:118
+msgid "Lists every fix made from the Links tab: when, by whom, in which post and what changed. Undo puts the post back as it was before the fix."
+msgstr ""
+
+#: src/Admin/AdminPage.php:119
+msgid "A fix can be undone only while the post is exactly as the fix left it. If the post was edited afterwards, Compare revisions opens the WordPress revisions screen so you can restore it by hand without losing those edits."
+msgstr ""
+
+#: src/Admin/AdminPage.php:120
+msgid "Fixes older than the period chosen in Settings are removed from the history once a day. The revisions WordPress saved stay with each post."
+msgstr ""
+
+#: src/Admin/AdminPage.php:124
+#: assets/build/admin.js:27
+msgid "Settings"
+msgstr ""
+
+#: src/Admin/AdminPage.php:126
+msgid "Choose the content types to scan, whether drafts are included, how often a scan runs on its own, who gets an e-mail about new broken links, how long the fix history is kept, and domain rules for sites that block checks or should never be checked."
+msgstr ""
+
+#: src/Admin/AdminPage.php:127
+msgid "Automatic scans use WP-Cron. If your site turns WP-Cron off, keep the Summary tab open while a scan runs, or set up a server cron job."
+msgstr ""
+
+#: src/BlockEditor.php:51
+msgid "This link is a button. Remove the button instead of the link."
+msgstr ""
+
+#: src/BlockEditor.php:58
+msgid "The link has no closing tag, so it cannot be removed safely. Open the editor to fix it."
+msgstr ""
+
+#: src/BlockEditor.php:105
+msgid "This link is not inside a button block."
+msgstr ""
+
+#: src/BlockEditor.php:140
+#: src/FixService.php:607
+msgid "The new URL is not valid."
+msgstr ""
+
+#: src/BlockEditor.php:366
+msgid "The link is no longer in the content. Scan the post again."
+msgstr ""
+
+#: src/FixService.php:130
+#: src/FixService.php:264
+msgid "This link is no longer in the SeekFix list. Scan the post again."
+msgstr ""
+
+#: src/FixService.php:154
+#: assets/build/admin.js:15
+msgid "This link works again. Do you want to fix it anyway?"
+msgstr ""
+
+#: src/FixService.php:181
+#: src/FixService.php:285
+#: src/FixService.php:342
+#: src/Rest/Controller.php:742
+msgid "This URL is no longer in the SeekFix list."
+msgstr ""
+
+#: src/FixService.php:195
+msgid "More links would change than you confirmed, because posts changed in the meantime. Review the count and try again."
+msgstr ""
+
+#: src/FixService.php:249
+msgid "Replace one URL at a time."
+msgstr ""
+
+#: src/FixService.php:317
+msgid "Two of the selected links in this post end at the same URL. Fix them one at a time."
+msgstr ""
+
+#: src/FixService.php:414
+#: src/UndoService.php:86
+msgid "The post no longer exists."
+msgstr ""
+
+#: src/FixService.php:441
+msgid "The link already has that URL. Nothing was changed."
+msgstr ""
+
+#: src/FixService.php:506
+msgid "The link is no longer in the content."
+msgstr ""
+
+#: src/FixService.php:512
+msgid "The post changed since the scan and now has more copies of this link. Check it again before fixing."
+msgstr ""
+
+#: src/FixService.php:614
+msgid "This URL does not redirect, so there is no final URL to use."
+msgstr ""
+
+#: src/FixService.php:620
+msgid "Unknown fix action."
+msgstr ""
+
+#: src/FixService.php:664
+msgid "Links inside page builder shortcodes are fixed in the editor."
+msgstr ""
+
+#: src/FixService.php:665
+msgid "This action is not available for this element."
+msgstr ""
+
+#: src/Installer.php:48
+msgid "SeekFix could not be activated:"
+msgstr ""
+
+#: src/Installer.php:49
+msgid "Plugin activation failed"
+msgstr ""
+
+#. translators: 1: required WordPress version, 2: installed version.
+#: src/Installer.php:192
+msgid "WordPress %1$s or later is required. This site runs %2$s."
+msgstr ""
+
+#. translators: 1: required PHP version, 2: installed version.
+#: src/Installer.php:197
+msgid "PHP %1$s or later is required. This server runs %2$s."
+msgstr ""
+
+#. translators: 1: database name (MySQL or MariaDB), 2: required version, 3: installed version.
+#: src/Installer.php:213
+msgid "%1$s %2$s or later is required. This server runs %3$s."
+msgstr ""
+
+#. translators: 1: site name, 2: number of links.
+#: src/Notifier.php:88
+msgid "[%1$s] %2$s new broken link"
+msgid_plural "[%1$s] %2$s new broken links"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: number of links, 2: site name.
+#: src/Notifier.php:126
+msgid "SeekFix found %1$s new broken link on %2$s."
+msgid_plural "SeekFix found %1$s new broken links on %2$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: post titles, comma separated.
+#: src/Notifier.php:147
+msgid "In: %s"
+msgstr ""
+
+#. translators: %s: number of links.
+#: src/Notifier.php:157
+msgid "And %s more."
+msgid_plural "And %s more."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Notifier.php:161
+msgid "Review and fix them:"
+msgstr ""
+
+#: src/Notifier.php:164
+msgid "You get this e-mail because broken link e-mails are on in Tools > Broken Links > Settings."
+msgstr ""
+
+#. translators: %d: HTTP status code.
+#: src/Notifier.php:178
+msgid "HTTP %d"
+msgstr ""
+
+#. translators: %s: error code, such as "dns".
+#: src/Notifier.php:183
+msgid "Error: %s"
+msgstr ""
+
+#: src/Notifier.php:186
+#: assets/build/admin.js:1
+#: assets/build/admin.js:7
+msgid "Broken"
+msgstr ""
+
+#. translators: 1: post titles, 2: number of other posts.
+#: src/Notifier.php:209
+msgid "%1$s and %2$s more post"
+msgid_plural "%1$s and %2$s more posts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/PostWriter.php:34
+msgid "You are not allowed to edit this post."
+msgstr ""
+
+#. translators: %s: name of the user who is editing the post.
+#: src/PostWriter.php:62
+msgid "%s is editing this post right now. Try again when they are done."
+msgstr ""
+
+#: src/PostWriter.php:63
+msgid "Another user"
+msgstr ""
+
+#: src/PostWriter.php:124
+msgid "Saving this post would change more than the link, because a plugin filters post content on save. Open the editor to fix it."
+msgstr ""
+
+#: src/PostWriter.php:125
+msgid "Saving this post with your role would remove HTML that only administrators can add. Ask an administrator to fix it, or open the editor."
+msgstr ""
+
+#. translators: %s: error message from WordPress.
+#: src/PostWriter.php:144
+msgid "WordPress could not save the post: %s"
+msgstr ""
+
+#: src/UndoService.php:69
+msgid "This fix is not in the history any more."
+msgstr ""
+
+#: src/UndoService.php:80
+msgid "This fix was already undone."
+msgstr ""
+
+#: src/UndoService.php:104
+msgid "The post was edited after this fix, so it cannot be undone automatically. Compare the revisions to restore it by hand."
+msgstr ""
+
+#: src/UndoService.php:114
+msgid "The revision saved before this fix was deleted, so it cannot be undone."
+msgstr ""
+
+#: assets/build/admin.js:1
+#: assets/build/admin.js:7
+msgid "Cannot verify"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Redirect"
+msgstr ""
+
+#: assets/build/admin.js:1
+#: assets/build/admin.js:15
+msgid "OK"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Ignored"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Link"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Button"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Image"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Shortcode"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Internal"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "External"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Domain not found"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Timed out"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Certificate error"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Connection failed"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Blocked by a firewall"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Private network"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Domain rule"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "Not found on this site"
+msgstr ""
+
+#: assets/build/admin.js:1
+msgid "View links"
+msgstr ""
+
+#. translators: 1: hours, 2: minutes.
+#: assets/build/admin.js:2
+msgid "%1$d h %2$02d min"
+msgstr ""
+
+#. translators: 1: minutes, 2: seconds.
+#: assets/build/admin.js:3
+msgid "%1$d min %2$02d s"
+msgstr ""
+
+#. translators: %d: seconds.
+#: assets/build/admin.js:4
+msgid "%d s"
+msgstr ""
+
+#: assets/build/admin.js:4
+msgid "Step 1 of 2: reading your posts and pages"
+msgstr ""
+
+#: assets/build/admin.js:4
+msgid "Step 2 of 2: checking each URL"
+msgstr ""
+
+#. translators: 1: posts read, 2: total posts.
+#: assets/build/admin.js:5
+msgid "%1$s of %2$s post read"
+msgid_plural "%1$s of %2$s posts read"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: URLs checked, 2: total URLs.
+#: assets/build/admin.js:6
+msgid "%1$s of %2$s URL checked"
+msgid_plural "%1$s of %2$s URLs checked"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/admin.js:6
+msgid "Scan in progress"
+msgstr ""
+
+#: assets/build/admin.js:6
+msgid "Scan paused"
+msgstr ""
+
+#: assets/build/admin.js:6
+msgid "Counting what to scan…"
+msgstr ""
+
+#: assets/build/admin.js:6
+msgid "Working…"
+msgstr ""
+
+#. translators: %s: time since the scan started, like "4 min 20 s".
+#: assets/build/admin.js:7
+msgid "Running for %s"
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Nothing is checked while the scan is paused. Resume it to continue where it stopped."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "SeekFix reads your posts and pages, then checks every link, button and image in them. Broken links are listed in the Links tab, where you can fix them without opening each post."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "No scan yet. Start one to find the broken links in your posts and pages. It runs on your server and sends nothing to any external service."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Not found or gone, confirmed by a second check."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "The site blocked the check or did not answer. Open them to check by hand."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Redirects"
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "They work, but go through another address first."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Checked"
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Different URLs checked so far."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Waiting to be checked"
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Found in your content, not checked yet."
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Start scan"
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Scan again"
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Pause"
+msgstr ""
+
+#: assets/build/admin.js:7
+msgid "Resume"
+msgstr ""
+
+#: assets/build/admin.js:7
+#: assets/build/admin.js:15
+#: assets/build/admin.js:27
+msgid "Cancel"
+msgstr ""
+
+#. translators: %s: date and time.
+#: assets/build/admin.js:8
+msgid "Last scan finished: %s"
+msgstr ""
+
+#. translators: %s: date and time.
+#: assets/build/admin.js:9
+msgid "Next automatic scan: %s"
+msgstr ""
+
+#: assets/build/admin.js:9
+msgid "Keep this screen open until the scan finishes. Links that fail once are checked again before they are marked broken."
+msgstr ""
+
+#: assets/build/admin.js:9
+msgid "You can leave this screen: the scan continues in the background, more slowly. Links that fail once are checked again before they are marked broken."
+msgstr ""
+
+#. translators: %s: column name.
+#: assets/build/admin.js:10
+msgid "Resize the %s column"
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "Drag to resize. Double-click to reset."
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "Remove link"
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "Remove button"
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "Replace URL"
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "Update to final URL"
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "The link is removed and its text stays in place."
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "The button block is removed. If it was the only button in its group, the group goes too."
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "Only the link address changes."
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "The link points straight to where the redirects end."
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "New URL"
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "The new URL is checked in the next scan."
+msgstr ""
+
+#: assets/build/admin.js:10
+msgid "Nothing to change: these links cannot be fixed from here."
+msgstr ""
+
+#. translators: %s: "N links in M posts".
+#: assets/build/admin.js:11
+msgid "This changes %s."
+msgstr ""
+
+#. translators: 1: "N links", 2: "N posts".
+#: assets/build/admin.js:12
+msgid "%1$s in %2$s"
+msgstr ""
+
+#. translators: %d: number of links.
+#: assets/build/admin.js:13
+msgid "%d link"
+msgid_plural "%d links"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of posts.
+#: assets/build/admin.js:14
+msgid "%d post"
+msgid_plural "%d posts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/admin.js:14
+msgid "Each post keeps a revision, and you can undo the change."
+msgstr ""
+
+#. translators: %d: number of links left as they are.
+#: assets/build/admin.js:15
+msgid "%d more link stays as it is: it is inside a page builder shortcode, does not support this action, or is in a post you cannot edit."
+msgid_plural "%d more links stay as they are: they are inside page builder shortcodes, do not support this action, or are in posts you cannot edit."
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/admin.js:15
+msgid "Fix anyway"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Moved"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Moved for now"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "See other"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Bad request"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Login required"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Access denied"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Not found"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Gone"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Too many requests"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Server error"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Bad gateway"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Unavailable"
+msgstr ""
+
+#: assets/build/admin.js:15
+msgid "Gateway timeout"
+msgstr ""
+
+#. translators: 1: HTTP code, 2: its meaning, like "Not found".
+#: assets/build/admin.js:16
+msgid "%1$s (%2$s)"
+msgstr ""
+
+#. translators: %s: answer, like "404" or "Timed out".
+#: assets/build/admin.js:17
+msgid "Last answer from the server: %s."
+msgstr ""
+
+#. translators: 1: redirect code, like "301", 2: final answer.
+#: assets/build/admin.js:18
+msgid "The link answers %1$s and sends visitors to another address, which answers %2$s."
+msgstr ""
+
+#. translators: 1: number of redirects, 2: redirect codes, like "301, 302", 3: final answer.
+#: assets/build/admin.js:19
+msgid "The link sends visitors through %1$d other addresses (%2$s). The last one answers %3$s."
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "Invalid certificate"
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "Broken:"
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "the page is missing, confirmed by a second check."
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "Cannot verify:"
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "the site blocked the check or did not answer. Open the link to check it by hand."
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "Redirect:"
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "the link works, but goes through another address first."
+msgstr ""
+
+#: assets/build/admin.js:19
+#: assets/build/admin.js:25
+msgid "Status"
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "Result of the last check of each link."
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "Below, the server answers in order: 301 → 200 means the link was redirected, then the page loaded."
+msgstr ""
+
+#: assets/build/admin.js:19
+msgid "You can also undo it later from the History tab."
+msgstr ""
+
+#: assets/build/admin.js:19
+#: assets/build/admin.js:26
+msgid "Change undone."
+msgstr ""
+
+#: assets/build/admin.js:19
+#: assets/build/admin.js:26
+msgid "Compare revisions"
+msgstr ""
+
+#. translators: %d: number of links fixed.
+#: assets/build/admin.js:20
+msgid "%d link fixed."
+msgid_plural "%d links fixed."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of URLs.
+#: assets/build/admin.js:21
+msgid "%d URL works again and was left as is."
+msgid_plural "%d URLs work again and were left as is."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: number of skipped items, 2: reason of the first one.
+#: assets/build/admin.js:22
+msgid "%1$d skipped: %2$s"
+msgstr ""
+
+#: assets/build/admin.js:22
+#: assets/build/admin.js:26
+msgid "Undo"
+msgstr ""
+
+#: assets/build/admin.js:22
+msgid "Edit post"
+msgstr ""
+
+#: assets/build/admin.js:22
+msgid "Show redirects"
+msgstr ""
+
+#: assets/build/admin.js:22
+msgid "Redirect chain"
+msgstr ""
+
+#: assets/build/admin.js:22
+msgid "Check again now"
+msgstr ""
+
+#. translators: %d: number of URLs.
+#: assets/build/admin.js:23
+msgid "%d URL checked."
+msgid_plural "%d URLs checked."
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/admin.js:23
+msgid "Ignore"
+msgstr ""
+
+#. translators: %d: number of URLs.
+#: assets/build/admin.js:24
+msgid "%d URL ignored."
+msgid_plural "%d URLs ignored."
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/admin.js:24
+msgid "Stop ignoring"
+msgstr ""
+
+#. translators: %d: number of URLs.
+#: assets/build/admin.js:25
+msgid "%d URL back in the queue."
+msgid_plural "%d URLs back in the queue."
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/admin.js:25
+msgid "URL"
+msgstr ""
+
+#: assets/build/admin.js:25
+msgid "Posts"
+msgstr ""
+
+#. translators: %d: number of posts.
+#: assets/build/admin.js:26
+msgid "In %d post"
+msgid_plural "In %d posts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/admin.js:26
+msgid "Element"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Link text"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Post"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Last checked"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Content type"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Internal or external"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Domain"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Each row is a link in a post. Use the Status filter to see broken links, links that could not be verified, or redirects. Turn on Group by URL to fix every post that uses the same URL at once."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Use the actions of a row to fix it: remove the link and keep its text, replace the URL, or point a redirect straight to its final address. Every fix saves a revision first and is listed in the History tab, where you can undo it."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Search URL or link text"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Group by URL"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Reset column widths"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Export CSV"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "No links match these filters. Pending URLs appear here once they are checked."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Can be undone"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Undone"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Post edited since"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Post deleted"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Revision deleted"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "link removed"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Date"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Fix"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Change"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "By"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Every fix made from the Links tab is listed here, newest first. Undo puts the post back as it was before the fix."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "A fix can be undone only while the post is exactly as the fix left it. If someone edited the post afterwards, use Compare revisions to restore it by hand, so their changes are not lost."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "No fixes yet. Links you fix from the Links tab appear here."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Choose what SeekFix scans, when it scans on its own and who gets an e-mail about new broken links. Changes apply from the next scan."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "What to scan"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "SeekFix checks the links, buttons and images in the content of these types. Menus, widgets, comments and custom fields are not scanned."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Content types"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Include drafts and posts pending review"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Automatic scans"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Scan all content"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Scans start around 3:00 site time and run in the background with WP-Cron, which needs visits to the site or a server cron job."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Never"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Every day"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Every week"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "E-mail"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "E-mail me when a scan finds new broken links"
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "One e-mail per scan. Each link is reported once."
+msgstr ""
+
+#: assets/build/admin.js:26
+msgid "Send to"
+msgstr ""
+
+#. translators: %s: the site's admin e-mail address.
+#: assets/build/admin.js:27
+msgid "One address per line. Leave it empty to use the site admin address (%s)."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Fix history"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Keep fixes in the History tab"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Older fixes are deleted once a day and can no longer be undone from SeekFix. The revisions WordPress saved before each fix stay with the post."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "For 30 days"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "For 90 days"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "For 180 days"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "For 1 year"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Forever"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Domain rules"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Always “cannot verify”"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "One domain per line. Sites that block automated checks. Subdomains are included."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Never check"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "One domain per line. Links to these domains are not checked or listed."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Settings saved. They apply from the next scan."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Some e-mail addresses were not valid and were removed."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Save settings"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Delete data"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Deletes the scan results and the history of fixes. Your posts and their revisions are not changed, and settings are kept. Fixes made so far can no longer be undone from SeekFix."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Delete all SeekFix data"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Delete all SeekFix data?"
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "This cannot be undone. A new scan rebuilds the results."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "All SeekFix data was deleted. Posts were not changed."
+msgstr ""
+
+#: assets/build/admin.js:27
+msgid "Delete"
+msgstr ""
